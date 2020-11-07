@@ -1,8 +1,7 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
-  "private": true,
-  "description": "TypeScript template action",
+  "name": "skip-workflow",
+  "version": "1.0.0",
+  "description": "Github action for skipping workflows upon matching commit message, pull request message or tag",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,31 +14,51 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/saulmaldonado/skip-workflow.git"
   },
   "keywords": [
-    "actions",
     "node",
-    "setup"
+    "github actions",
+    "action",
+    "workflow",
+    "skip ci"
   ],
-  "author": "",
+  "author": "Saul Maldonado <samaldonado4@gmail.com> (https://saulmaldonado.tech)",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.2.6",
+    "eslint-config-airbnb-typescript": "^12.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
     "@types/node": "^14.10.0",
-    "@typescript-eslint/parser": "^3.10.1",
-    "@vercel/ncc": "^0.23.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.6.1",
+    "@vercel/ncc": "^0.25.1",
     "eslint": "^7.8.1",
     "eslint-plugin-github": "^4.1.1",
-    "eslint-plugin-jest": "^23.20.0",
-    "jest": "^24.9.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^24.1.0",
+    "husky": ">=4",
+    "jest": "^26.6.3",
     "jest-circus": "^26.4.2",
     "js-yaml": "^3.14.0",
-    "prettier": "2.1.1",
-    "ts-jest": "^24.3.0",
+    "lint-staged": ">=10",
+    "prettier": "2.1.2",
+    "ts-jest": "^26.4.3",
     "typescript": "^4.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "yarn lint",
+      "prettier --write"
+    ],
+    "*.{ts,json,md,yaml,yml,js}": "yarn format",
+    "*.js": "eslint --cache --fix"
   }
 }
