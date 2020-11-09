@@ -1,11 +1,16 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: skip-workflow
+description: 'Github action for skipping workflows upon matching commit message, pull request message or tag'
+author: 'saulmaldonado'
 inputs:
-  milliseconds: # change this
+  phrase:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'phrase to search for in commit messages'
+  github-token:
+    required: true
+    description: 'workflow github token'
+outputs:
+  skip-workflow:
+    description: 'Boolean output indicating if the workflow can be skipped'
 runs:
   using: 'node12'
   main: 'dist/index.js'
