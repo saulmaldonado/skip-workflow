@@ -10,6 +10,13 @@ export type GetCommits = (
   context: Context,
 ) => Promise<Commit[]>;
 
+/**
+ *
+ * @param {octokit} octokit Octokit instance
+ * @param {Context} context workflow context instance
+ *
+ * @returns {Promise<{message: string, sha: string}[]>} Promise if commit messages and shas array
+ */
 export const getCommits: GetCommits = async (octokit, context) => {
   const { pulls } = octokit;
 

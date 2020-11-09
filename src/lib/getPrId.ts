@@ -2,6 +2,13 @@ import { debug } from 'console';
 
 type GetPrId = (ref: string) => number;
 
+/**
+ * Searches for and return the pull request ID from workflow ref
+ *
+ * @param {string} ref Pull request ref for workflow
+ *
+ * @returns {number} Pull request ID
+ */
 export const getPrId: GetPrId = (ref) => {
   const prIdRegex = /(?<=refs\/pull\/)\d+(?=\/merge)/i;
 
