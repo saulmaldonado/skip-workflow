@@ -78,14 +78,17 @@ const console_1 = __webpack_require__(7082);
  */
 exports.getPrId = (ref) => {
     var _a;
-    const prIdRegex = /(?<=refs\/pull\/)\d+(?=\/merge)/i;
+    const prIdRegex = /(?<=refs\/pull\/)[\d\w]+(?=\/merge)/i;
     console_1.debug(`Searching for pull request ID in ref: ${ref}`);
     const [prId] = (_a = prIdRegex.exec(ref)) !== null && _a !== void 0 ? _a : [];
     if (!prId) {
         throw new Error("Pull request ID was not found, in action's ref.");
     }
     else if (Number.isNaN(Number(prId))) {
-        throw new Error('Invalid pull request ID.');
+        throw new Error(`Invalid pull request ID: ${prId}`);
+    }
+    else if (prId.startsWith('0')) {
+        throw new Error(`Invalid pull request ID: ${prId}`);
     }
     return Number(prId);
 };

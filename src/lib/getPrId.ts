@@ -10,7 +10,7 @@ type GetPrId = (ref: string) => number;
  * @returns {number} Pull request ID
  */
 export const getPrId: GetPrId = (ref) => {
-  const prIdRegex = /(?<=refs\/pull\/)\d+(?=\/merge)/i;
+  const prIdRegex = /(?<=refs\/pull\/)[\d\w]+(?=\/merge)/i;
 
   debug(`Searching for pull request ID in ref: ${ref}`);
   const [prId] = prIdRegex.exec(ref) ?? [];
@@ -18,7 +18,9 @@ export const getPrId: GetPrId = (ref) => {
   if (!prId) {
     throw new Error("Pull request ID was not found, in action's ref.");
   } else if (Number.isNaN(Number(prId))) {
-    throw new Error('Invalid pull request ID.');
+    throw new Error(`Invalid pull request ID: ${prId}`);
+  } else if (prId.startsWith('0')) {
+    throw new Error(`Invalid pull request ID: ${prId}`);
   }
 
   return Number(prId);
