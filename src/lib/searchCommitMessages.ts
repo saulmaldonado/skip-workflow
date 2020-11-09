@@ -30,7 +30,7 @@ export const searchAllCommitMessages: SearchCommitMessages = (
 
     debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
 
-    return lowercaseMessage !== lowercasePhrase;
+    return !lowercaseMessage.includes(lowercasePhrase);
   });
 
   const result = !commit;

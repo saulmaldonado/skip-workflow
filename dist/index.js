@@ -115,7 +115,7 @@ exports.searchAllCommitMessages = (commits, phrase) => {
     const commit = commits.find(({ message, sha }) => {
         const lowercaseMessage = removeExtraneousWhiteSpace(message).toLowerCase();
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-        return lowercaseMessage !== lowercasePhrase;
+        return !lowercaseMessage.includes(lowercasePhrase);
     });
     const result = !commit;
     if (result) {
