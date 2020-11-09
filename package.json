@@ -55,11 +55,7 @@
     }
   },
   "lint-staged": {
-    "*.ts": [
-      "yarn lint",
-      "prettier --write"
-    ],
-    "*.{ts,json,md,yaml,yml,js}": "yarn format",
-    "*.js": "eslint --cache --fix"
+    "*.{ts,json,md,yaml,yml,js}": "prettier --write",
+    "*.ts": "eslint --fix"
   }
 }
