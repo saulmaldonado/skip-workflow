@@ -1,19 +1,54 @@
 import { debug, getInput, setFailed, setOutput } from '@actions/core';
-import { wait } from './wait';
+import { context, getOctokit } from '@actions/github';
+import { config } from './config';
+import { getCommits } from './lib/getCommits';
+import { searchAllCommitMessages } from './lib/searchCommitMessages';
 
-async function run(): Promise<void> {
+type Run = () => Promise<void>;
+const run: Run = async () => {
+  const {
+    GITHUB_TOKEN_INPUT_ID,
+    PHRASE_INPUT_ID,
+    MATCH_FOUND_OUTPUT_ID,
+  } = config;
+
   try {
-    const ms: string = getInput('milliseconds');
-    debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const githubToken: string = getInput(GITHUB_TOKEN_INPUT_ID, {
+      required: true,
+    });
+    debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
 
-    debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    debug(new Date().toTimeString());
+    const phrase: string = getInput(PHRASE_INPUT_ID, { required: true });
+    debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
 
-    setOutput('time', new Date().toTimeString());
+    const octokit = getOctokit(githubToken);
+
+    const commits = await getCommits(octokit, context);
+
+    const { result, commit } = searchAllCommitMessages(commits, phrase);
+
+    if (result) {
+      console.log(
+        `⏭ "${phrase}" found in all commit messages. skipping workflow...`,
+      );
+
+      setOutput(MATCH_FOUND_OUTPUT_ID, result);
+    } else {
+      console.log(
+        `❗ "${phrase}" not found in "${commit!.message}" sha: ${
+          commit!.sha
+        }. continuing workflow...`,
+      );
+
+      setOutput(MATCH_FOUND_OUTPUT_ID, null);
+    }
   } catch (error) {
-    setFailed(error.message);
+    debug(error.stack ?? 'No error stack trace');
+
+    error.message = `❌ ${error.message}`;
+
+    setFailed(error);
   }
-}
+};
 
 run();
