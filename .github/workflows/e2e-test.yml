@@ -58,10 +58,12 @@ jobs:
         run: exit 1
 
   pass-check:
-    needs: [test-action, test-action-2]
+    needs: skip-workflow-test-job
+
+    if: ${{ needs.skip-workflow-test-job.outputs.skip-job }}
 
     runs-on: ubuntu-latest
-    name: test-job-2
+    name: pass-check
     steps:
       - name: pass-check
         run: |
