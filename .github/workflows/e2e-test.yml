@@ -13,8 +13,6 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: test-action
-        id: skip-workflow-test
-
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +22,7 @@ jobs:
   test-action:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow.outputs.match-found }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.match-found }}
     runs-on: ubuntu-latest
     name: test-job-1
     steps:
@@ -34,7 +32,7 @@ jobs:
   test-action-2:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow.outputs.match-found }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.match-found }}
     runs-on: ubuntu-latest
     name: test-job-2
     steps:
