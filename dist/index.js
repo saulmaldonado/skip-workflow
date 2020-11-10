@@ -171,6 +171,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, } = config_1.config;
     try {
         const context = new context_1.Context();
+        core_1.debug(JSON.stringify(process.env));
+        core_1.debug(JSON.stringify(context));
         const githubToken = core_1.getInput(GITHUB_TOKEN_INPUT_ID, {
             required: true,
         });

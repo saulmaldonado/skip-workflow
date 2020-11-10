@@ -16,6 +16,9 @@ const run: Run = async () => {
   try {
     const context = new Context();
 
+    debug(JSON.stringify(process.env));
+    debug(JSON.stringify(context));
+
     const githubToken: string = getInput(GITHUB_TOKEN_INPUT_ID, {
       required: true,
     });
