@@ -1,6 +1,7 @@
 // import { issueCommand } from '@actions/core/lib/command';
 import * as github from '@actions/github';
 import * as command from '@actions/core/lib/command';
+import * as core from '@actions/core';
 import run from '../src/run';
 import { config } from '../src/config';
 
@@ -16,7 +17,7 @@ describe('Integration Test: main', () => {
   let listCommitsSpy: jest.SpyInstance;
   let getOctokitSpy: jest.SpyInstance;
   let issueCommandSpy: jest.SpyInstance;
-  let issueSpy: jest.SpyInstance;
+  let setFailedSpy: jest.SpyInstance;
 
   const mockPrId = 1;
   const mockRef = `refs/pull/${mockPrId}/merge`;
@@ -40,19 +41,13 @@ describe('Integration Test: main', () => {
 
     listCommitsSpy = jest.spyOn(mockOctokit.pulls, 'listCommits');
     issueCommandSpy = jest.spyOn(command, 'issueCommand');
-    issueSpy = jest.spyOn(command, 'issue');
+    setFailedSpy = jest.spyOn(core, 'setFailed');
   });
 
   afterAll(() => {
     jest.clearAllMocks();
     process.env = oldEnv;
   });
-
-  //    command_1.issueCommand('set-output', { name }, value);
-
-  // function issueCommand(command, properties, message) {
-  //   const cmd = new Command(command, properties, message);
-  //   process.stdout.write(cmd.toString() + os.EOL);
 
   it('should set output to true when all commit message match', async () => {
     const mockCommits = [
@@ -111,10 +106,11 @@ describe('Integration Test: main', () => {
       throw mockNetworkError;
     });
 
+    const mockFn = jest.fn();
+    setFailedSpy.mockImplementationOnce(mockFn);
+
     await run();
 
-    expect(process.exitCode).toBe(1);
-
-    expect(issueSpy).toBeCalledWith('error', mockNetworkError.toString());
+    expect(setFailedSpy).toBeCalledWith(mockNetworkError);
   });
 });
