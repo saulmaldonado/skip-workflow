@@ -18,10 +18,11 @@ jobs:
         with:
           ref: ${{ github.events.inputs.ref }}
 
+      - name: set test ref
+        run: echo "GITHUB_REF='refs/pull/6/merge'" >> $GITHUB_ENV
+
       - name: test-action
         id: skip-workflow-test
-        env:
-          GITHUB_REF: 'refs/pull/6/merge'
 
         uses: ./
         with:
