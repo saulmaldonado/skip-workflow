@@ -22,7 +22,7 @@ jobs:
   test-action:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow-test-job.outputs.match-found }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.skip-job }}
     runs-on: ubuntu-latest
     name: test-job-1
     steps:
@@ -32,7 +32,7 @@ jobs:
   test-action-2:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow-test-job.outputs.match-found }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.skip-job }}
     runs-on: ubuntu-latest
     name: test-job-2
     steps:
