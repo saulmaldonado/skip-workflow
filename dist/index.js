@@ -135,6 +135,21 @@ exports.searchAllCommitMessages = (commits, phrase) => {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const run_1 = __importDefault(__webpack_require__(7884));
+run_1.default();
+
+
+/***/ }),
+
+/***/ 7884:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -147,6 +162,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(2186);
 const github_1 = __webpack_require__(5438);
+const context_1 = __webpack_require__(4087);
 const config_1 = __webpack_require__(88);
 const getCommits_1 = __webpack_require__(764);
 const searchCommitMessages_1 = __webpack_require__(7835);
@@ -154,6 +170,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, } = config_1.config;
     try {
+        const context = new context_1.Context();
         const githubToken = core_1.getInput(GITHUB_TOKEN_INPUT_ID, {
             required: true,
         });
@@ -161,7 +178,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const phrase = core_1.getInput(PHRASE_INPUT_ID, { required: true });
         core_1.debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
         const octokit = github_1.getOctokit(githubToken);
-        const commits = yield getCommits_1.getCommits(octokit, github_1.context);
+        const commits = yield getCommits_1.getCommits(octokit, context);
         const { result, commit } = searchCommitMessages_1.searchAllCommitMessages(commits, phrase);
         if (result) {
             console.log(`⏭ "${phrase}" found in all commit messages. skipping workflow...`);
@@ -178,7 +195,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         core_1.setFailed(error);
     }
 });
-run();
+exports.default = run;
 
 
 /***/ }),
