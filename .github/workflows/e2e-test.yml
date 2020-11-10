@@ -32,7 +32,7 @@ jobs:
           curl \
             -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
             -d "{'name':'skip-workflow-e2e-test','head_sha': ${{ github.sha }}, 'conclusion': 'failure'}"
 
@@ -51,7 +51,7 @@ jobs:
           curl \
             -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
             -d "{'name':'skip-workflow-e2e-test','head_sha': ${{ github.sha }}, 'conclusion': 'failure'}"
       - name: this-command-should-not-run-2
@@ -70,6 +70,6 @@ jobs:
           curl \
             -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
             -d "{'name':'skip-workflow-e2e-test','head_sha': ${{ github.sha }}, 'conclusion': 'success'}"
