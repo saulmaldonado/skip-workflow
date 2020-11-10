@@ -73,5 +73,3 @@ jobs:
             -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
             -d "{'name':'skip-workflow-e2e-test','head_sha': ${{ github.sha }}, 'conclusion': 'success'}"
-      - name: this-command-should-not-run-2
-        run: exit 1
