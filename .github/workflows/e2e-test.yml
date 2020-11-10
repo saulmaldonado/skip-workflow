@@ -20,6 +20,8 @@ jobs:
 
       - name: test-action
         id: skip-workflow-test
+        env:
+          GITHUB_REF: 'refs/pull/6/merge'
 
         uses: ./
         with:
