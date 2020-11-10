@@ -37,4 +37,4 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/actions/workflows/3497271/dispatches \
-            -d '{"ref":"main"}'
+            -d '{"ref":"main", "inputs": {"sha": "${{ github.sha }}"}}'

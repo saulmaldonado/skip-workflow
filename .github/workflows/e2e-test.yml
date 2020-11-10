@@ -1,6 +1,12 @@
 name: skip-workflow-e2e-test
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: SHA of commit to test
+        required: false
+        default: ${{ github.sha }}
 jobs:
   skip-workflow-test-job:
     runs-on: ubuntu-latest
@@ -10,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.inputs.sha }}
 
       - name: test-action
         id: skip-workflow
@@ -34,7 +40,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
-            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.sha }}", "conclusion": "failure"}'
+            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.event.inputs.sha }}", "conclusion": "failure"}'
 
       - name: this-command-should-not-run
         run: exit 1
@@ -53,7 +59,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
-            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.sha }}", "conclusion": "failure"}'
+            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.event.inputs.sha }}", "conclusion": "failure"}'
       - name: this-command-should-not-run-2
         run: exit 1
 
@@ -72,4 +78,4 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
-            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.sha }}", "conclusion": "success"}'
+            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.event.inputs.sha }}", "conclusion": "success"}'
