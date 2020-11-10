@@ -5,8 +5,7 @@ on:
     inputs:
       sha:
         description: SHA of commit to test
-        required: false
-        default: ${{ github.sha }}
+        required: true
 jobs:
   skip-workflow-test-job:
     runs-on: ubuntu-latest
