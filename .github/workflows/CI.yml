@@ -1,0 +1,37 @@
+name: 'CI'
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build-format-lint-package-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install
+      - run: |
+          yarn --frozen-lockfile
+
+      - name: build
+      - run: |
+          yarn build
+
+      - name: format
+      - run: |
+          yarn format-check
+
+      - name: lint
+      - run: |
+          yarn lint
+
+      - name: package
+      - run: |
+          yarn package
+
+      - name: test
+      - run: |
+          yarn test
