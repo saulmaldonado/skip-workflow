@@ -8,6 +8,9 @@ inputs:
   github-token:
     required: true
     description: 'workflow github token'
+  pr-id:
+    required: false
+    description: 'explicitly set pull request ID'
 outputs:
   skip-workflow:
     description: 'Boolean output indicating if the workflow can be skipped'

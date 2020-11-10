@@ -1,4 +1,5 @@
-import { debug } from 'console';
+import { getInput, debug } from '@actions/core';
+import { config } from '../config';
 
 type GetPrId = (ref: string) => number;
 
@@ -10,10 +11,15 @@ type GetPrId = (ref: string) => number;
  * @returns {number} Pull request ID
  */
 export const getPrId: GetPrId = (ref) => {
+  const { PR_ID_INPUT_ID } = config;
   const prIdRegex = /(?<=refs\/pull\/)[\d\w]+(?=\/merge)/i;
 
-  debug(`Searching for pull request ID in ref: ${ref}`);
-  const [prId] = prIdRegex.exec(ref) ?? [];
+  let prId = getInput(PR_ID_INPUT_ID);
+
+  if (!prId) {
+    debug(`Searching for pull request ID in ref: ${ref}`);
+    [prId] = prIdRegex.exec(ref) ?? [];
+  }
 
   if (!prId) {
     throw new Error("Pull request ID was not found, in action's ref.");

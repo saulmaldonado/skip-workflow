@@ -1,12 +1,6 @@
 name: skip-workflow-e2e-test
 
-on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: 'sha of the commit for checkout'
-        required: true
-
+on: workflow_dispatch
 jobs:
   skip-workflow-test-job:
     runs-on: ubuntu-latest
@@ -16,10 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.events.inputs.ref }}
-
-      - name: set test ref
-        run: echo "GITHUB_REF='refs/pull/6/merge'" >> $GITHUB_ENV
+          ref: ${{ github.sha }}
 
       - name: test-action
         id: skip-workflow-test
@@ -28,6 +19,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           phrase: '[skip-workflow]'
+          pr-id: 6
 
   test-action:
     needs: skip-workflow-test-job

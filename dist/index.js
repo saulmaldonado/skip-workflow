@@ -13,6 +13,7 @@ exports.config = {
     PHRASE_INPUT_ID: 'phrase',
     GITHUB_TOKEN_INPUT_ID: 'github-token',
     MATCH_FOUND_OUTPUT_ID: 'match-found',
+    PR_ID_INPUT_ID: 'pr-id',
 };
 
 
@@ -68,7 +69,8 @@ exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, fun
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getPrId = void 0;
-const console_1 = __webpack_require__(7082);
+const core_1 = __webpack_require__(2186);
+const config_1 = __webpack_require__(88);
 /**
  * Searches for and return the pull request ID from workflow ref
  *
@@ -78,9 +80,13 @@ const console_1 = __webpack_require__(7082);
  */
 exports.getPrId = (ref) => {
     var _a;
+    const { PR_ID_INPUT_ID } = config_1.config;
     const prIdRegex = /(?<=refs\/pull\/)[\d\w]+(?=\/merge)/i;
-    console_1.debug(`Searching for pull request ID in ref: ${ref}`);
-    const [prId] = (_a = prIdRegex.exec(ref)) !== null && _a !== void 0 ? _a : [];
+    let prId = core_1.getInput(PR_ID_INPUT_ID);
+    if (!prId) {
+        core_1.debug(`Searching for pull request ID in ref: ${ref}`);
+        [prId] = (_a = prIdRegex.exec(ref)) !== null && _a !== void 0 ? _a : [];
+    }
     if (!prId) {
         throw new Error("Pull request ID was not found, in action's ref.");
     }
@@ -171,8 +177,6 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, } = config_1.config;
     try {
         const context = new context_1.Context();
-        core_1.debug(JSON.stringify(process.env));
-        core_1.debug(JSON.stringify(context));
         const githubToken = core_1.getInput(GITHUB_TOKEN_INPUT_ID, {
             required: true,
         });
