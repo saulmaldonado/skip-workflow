@@ -13,7 +13,12 @@ exports.config = {
     PHRASE_INPUT_ID: 'phrase',
     GITHUB_TOKEN_INPUT_ID: 'github-token',
     MATCH_FOUND_OUTPUT_ID: 'match-found',
+    SEARCH_INPUT_ID: 'search',
     PR_ID_INPUT_ID: 'pr-id',
+    SEARCH_OPTIONS: {
+        PULL_REQUEST: 'pull_request',
+        COMMIT_MESSAGES: 'commit_message',
+    },
 };
 
 
@@ -102,6 +107,44 @@ exports.getPrId = (ref) => {
 
 /***/ }),
 
+/***/ 4411:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.removeExtraneousWhiteSpace = void 0;
+exports.removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').trim();
+
+
+/***/ }),
+
+/***/ 9538:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parseSearchInput = void 0;
+const config_1 = __webpack_require__(88);
+const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+/**
+ * Parses input from workflow and outputs a Set of options found
+ * @param {string} searchInput JSON string array input from the workflow
+ *
+ * @returns {Set<string>} Set of options found from input
+ */
+exports.parseSearchInput = (searchInput) => {
+    const options = JSON.parse(searchInput);
+    const { SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES }, } = config_1.config;
+    const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
+    const findOption = (option) => searchOptions.includes(removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(option));
+    return new Set(options.filter(findOption));
+};
+
+
+/***/ }),
+
 /***/ 7835:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -110,7 +153,7 @@ exports.getPrId = (ref) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchAllCommitMessages = void 0;
 const console_1 = __webpack_require__(7082);
-const removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').trim();
+const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 /**
  * Searches all commits for message with included matching phrase. Case and whitespace insensitive.
  * @param {{message: string, sha: string}} commits Array of commits
@@ -120,9 +163,9 @@ const removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').trim(
  * object with result and commit that does not match the phrase
  */
 exports.searchAllCommitMessages = (commits, phrase) => {
-    const lowercasePhrase = removeExtraneousWhiteSpace(phrase).toLowerCase();
+    const lowercasePhrase = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
     const commit = commits.find(({ message, sha }) => {
-        const lowercaseMessage = removeExtraneousWhiteSpace(message).toLowerCase();
+        const lowercaseMessage = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(message).toLowerCase();
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
         return !lowercaseMessage.includes(lowercasePhrase);
     });
@@ -171,10 +214,11 @@ const github_1 = __webpack_require__(5438);
 const context_1 = __webpack_require__(4087);
 const config_1 = __webpack_require__(88);
 const getCommits_1 = __webpack_require__(764);
+const parseSearchInput_1 = __webpack_require__(9538);
 const searchCommitMessages_1 = __webpack_require__(7835);
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, } = config_1.config;
+    const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, SEARCH_INPUT_ID, } = config_1.config;
     try {
         const context = new context_1.Context();
         const githubToken = core_1.getInput(GITHUB_TOKEN_INPUT_ID, {
@@ -183,6 +227,10 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         core_1.debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
         const phrase = core_1.getInput(PHRASE_INPUT_ID, { required: true });
         core_1.debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
+        const searchInput = core_1.getInput(SEARCH_INPUT_ID, { required: true });
+        core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
+        const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
+        core_1.debug([...searchOptions].toString());
         const octokit = github_1.getOctokit(githubToken);
         const commits = yield getCommits_1.getCommits(octokit, context);
         const { result, commit } = searchCommitMessages_1.searchAllCommitMessages(commits, phrase);

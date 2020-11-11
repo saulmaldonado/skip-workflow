@@ -1,10 +1,6 @@
 import { debug } from 'console';
 import { Commit } from './getCommits';
-
-type RemoveExtraneousWhiteSpace = (string: string) => string;
-
-const removeExtraneousWhiteSpace: RemoveExtraneousWhiteSpace = (string) =>
-  string.replace(/\s+/g, ' ').trim();
+import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
 
 type SearchCommitMessages = (
   commits: Commit[],

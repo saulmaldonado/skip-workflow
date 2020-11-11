@@ -5,6 +5,10 @@ inputs:
   phrase:
     required: true
     description: 'phrase to search for in commit messages'
+  search:
+    required: true
+    description: 'messages or tags to search phrase for'
+    default: '["commit_messages"]'
   github-token:
     required: true
     description: 'workflow github token'

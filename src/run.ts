@@ -3,6 +3,7 @@ import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
 import { config } from './config';
 import { getCommits } from './lib/getCommits';
+import { parseSearchInput } from './lib/parseSearchInput';
 import { searchAllCommitMessages } from './lib/searchCommitMessages';
 
 type Run = () => Promise<void>;
@@ -11,6 +12,7 @@ const run: Run = async () => {
     GITHUB_TOKEN_INPUT_ID,
     PHRASE_INPUT_ID,
     MATCH_FOUND_OUTPUT_ID,
+    SEARCH_INPUT_ID,
   } = config;
 
   try {
@@ -23,6 +25,13 @@ const run: Run = async () => {
 
     const phrase: string = getInput(PHRASE_INPUT_ID, { required: true });
     debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
+
+    const searchInput = getInput(SEARCH_INPUT_ID, { required: true });
+    debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
+
+    const searchOptions = parseSearchInput(searchInput);
+
+    debug([...searchOptions].toString());
 
     const octokit = getOctokit(githubToken);
 
