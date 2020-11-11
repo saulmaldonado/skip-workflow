@@ -107,6 +107,42 @@ exports.getPrId = (ref) => {
 
 /***/ }),
 
+/***/ 9538:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getPullRequest = void 0;
+const getPrId_1 = __webpack_require__(1126);
+let pullRequestCache;
+exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
+    if (pullRequestCache)
+        return pullRequestCache;
+    const { repo: { owner, repo }, ref, } = context;
+    const { pulls } = octokit;
+    const prId = getPrId_1.getPrId(ref);
+    const { data: pr } = yield pulls.get({
+        owner,
+        repo,
+        pull_number: prId,
+    });
+    pullRequestCache = pr;
+    return pr;
+});
+
+
+/***/ }),
+
 /***/ 4411:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -119,7 +155,7 @@ exports.removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').tri
 
 /***/ }),
 
-/***/ 9538:
+/***/ 5340:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -220,7 +256,8 @@ const github_1 = __webpack_require__(5438);
 const context_1 = __webpack_require__(4087);
 const config_1 = __webpack_require__(88);
 const getCommits_1 = __webpack_require__(764);
-const parseSearchInput_1 = __webpack_require__(9538);
+const getPullRequest_1 = __webpack_require__(9538);
+const parseSearchInput_1 = __webpack_require__(5340);
 const searchCommitMessages_1 = __webpack_require__(7835);
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -236,10 +273,12 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchInput = core_1.getInput(SEARCH_INPUT_ID, { required: true });
         core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
-        core_1.debug([...searchOptions].toString());
+        core_1.debug(`options: ${[...searchOptions].toString()}`);
         const octokit = github_1.getOctokit(githubToken);
         const commits = yield getCommits_1.getCommits(octokit, context);
         const { result, commit } = searchCommitMessages_1.searchAllCommitMessages(commits, phrase);
+        const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);
+        core_1.debug(JSON.stringify(pullRequest));
         if (result) {
             console.log(`⏭ "${phrase}" found in all commit messages. skipping workflow...`);
             core_1.setOutput(MATCH_FOUND_OUTPUT_ID, result);

@@ -1,8 +1,10 @@
 import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { PullsGetResponseData } from '@octokit/types';
 import { config } from './config';
 import { getCommits } from './lib/getCommits';
+import { getPullRequest } from './lib/getPullRequest';
 import { parseSearchInput } from './lib/parseSearchInput';
 import { searchAllCommitMessages } from './lib/searchCommitMessages';
 
@@ -30,14 +32,19 @@ const run: Run = async () => {
     debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
 
     const searchOptions = parseSearchInput(searchInput);
-
-    debug([...searchOptions].toString());
+    debug(`options: ${[...searchOptions].toString()}`);
 
     const octokit = getOctokit(githubToken);
 
     const commits = await getCommits(octokit, context);
-
     const { result, commit } = searchAllCommitMessages(commits, phrase);
+
+    const pullRequest: PullsGetResponseData = await getPullRequest(
+      octokit,
+      context,
+    );
+
+    debug(JSON.stringify(pullRequest));
 
     if (result) {
       console.log(

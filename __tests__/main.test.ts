@@ -1,4 +1,3 @@
-// import { issueCommand } from '@actions/core/lib/command';
 import * as github from '@actions/github';
 import * as command from '@actions/core/lib/command';
 import * as core from '@actions/core';
@@ -18,6 +17,7 @@ describe('Integration Test: main', () => {
   let getOctokitSpy: jest.SpyInstance;
   let issueCommandSpy: jest.SpyInstance;
   let setFailedSpy: jest.SpyInstance;
+  let getCommitSpy: jest.SpyInstance;
 
   const mockPrId = 1;
   const mockRef = `refs/pull/${mockPrId}/merge`;
@@ -42,6 +42,10 @@ describe('Integration Test: main', () => {
     getOctokitSpy.mockImplementation(() => mockOctokit);
 
     listCommitsSpy = jest.spyOn(mockOctokit.pulls, 'listCommits');
+
+    getCommitSpy = jest.spyOn(mockOctokit.pulls, 'get');
+    getCommitSpy.mockImplementation(() => ['mock commits here']);
+
     issueCommandSpy = jest.spyOn(command, 'issueCommand');
     setFailedSpy = jest.spyOn(core, 'setFailed');
   });
