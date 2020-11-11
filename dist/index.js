@@ -17,7 +17,7 @@ exports.config = {
     PR_ID_INPUT_ID: 'pr-id',
     SEARCH_OPTIONS: {
         PULL_REQUEST: 'pull_request',
-        COMMIT_MESSAGES: 'commit_message',
+        COMMIT_MESSAGES: 'commit_messages',
     },
 };
 
@@ -138,8 +138,14 @@ exports.parseSearchInput = (searchInput) => {
     const options = JSON.parse(searchInput);
     const { SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES }, } = config_1.config;
     const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
-    const findOption = (option) => searchOptions.includes(removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(option));
-    return new Set(options.filter(findOption));
+    const findOption = (option) => {
+        const lowerCaseOption = option.toLowerCase();
+        if (!searchOptions.includes(removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(lowerCaseOption))) {
+            throw new Error(`"${option}" is not a valid search option`);
+        }
+        return lowerCaseOption;
+    };
+    return new Set(options.map(findOption));
 };
 
 
