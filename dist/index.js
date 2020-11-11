@@ -122,12 +122,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPullRequest = void 0;
+exports.getPullRequest = exports.pullRequestCache = void 0;
 const getPrId_1 = __webpack_require__(1126);
-let pullRequestCache;
+exports.pullRequestCache = {
+    cache: null,
+};
 exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
-    if (pullRequestCache)
-        return pullRequestCache;
+    if (exports.pullRequestCache === null || exports.pullRequestCache === void 0 ? void 0 : exports.pullRequestCache.cache)
+        return exports.pullRequestCache.cache;
     const { repo: { owner, repo }, ref, } = context;
     const { pulls } = octokit;
     const prId = getPrId_1.getPrId(ref);
@@ -136,7 +138,7 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
         repo,
         pull_number: prId,
     });
-    pullRequestCache = pr;
+    exports.pullRequestCache.cache = pr;
     return pr;
 });
 

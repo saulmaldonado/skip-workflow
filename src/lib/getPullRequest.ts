@@ -8,10 +8,14 @@ type GetPullRequest = (
   context: Context,
 ) => Promise<PullsGetResponseData>;
 
-let pullRequestCache: PullsGetResponseData;
+export type PullRequestCache = { cache: PullsGetResponseData | null };
+
+export const pullRequestCache: PullRequestCache = {
+  cache: null,
+};
 
 export const getPullRequest: GetPullRequest = async (octokit, context) => {
-  if (pullRequestCache) return pullRequestCache;
+  if (pullRequestCache?.cache) return pullRequestCache.cache;
 
   const {
     repo: { owner, repo },
@@ -28,7 +32,7 @@ export const getPullRequest: GetPullRequest = async (octokit, context) => {
     pull_number: prId,
   });
 
-  pullRequestCache = pr;
+  pullRequestCache.cache = pr;
 
   return pr;
 };
