@@ -16,8 +16,14 @@ export const parseSearchInput: ParseSearchInput = (searchInput) => {
   } = config;
   const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
 
-  const findOption = (option: string): boolean =>
-    searchOptions.includes(removeExtraneousWhiteSpace(option));
+  const findOption = (option: string): string => {
+    const lowerCaseOption = option.toLowerCase();
 
-  return new Set(options.filter(findOption));
+    if (!searchOptions.includes(removeExtraneousWhiteSpace(lowerCaseOption))) {
+      throw new Error(`"${option}" is not a valid search option`);
+    }
+    return lowerCaseOption;
+  };
+
+  return new Set(options.map(findOption));
 };

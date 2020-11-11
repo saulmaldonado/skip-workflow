@@ -6,6 +6,6 @@ export const config = {
   PR_ID_INPUT_ID: 'pr-id',
   SEARCH_OPTIONS: {
     PULL_REQUEST: 'pull_request',
-    COMMIT_MESSAGES: 'commit_message',
+    COMMIT_MESSAGES: 'commit_messages',
   },
 };

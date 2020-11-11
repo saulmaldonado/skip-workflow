@@ -23,8 +23,6 @@ describe('Integration Test: main', () => {
   const mockRef = `refs/pull/${mockPrId}/merge`;
   const mockSearchInput = JSON.stringify(['commit_messages']);
 
-  console.log(mockSearchInput);
-
   const mockEnv = {
     GITHUB_REF: mockRef,
     GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
