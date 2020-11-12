@@ -3,10 +3,15 @@ import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
 import { PullsGetResponseData } from '@octokit/types';
 import { config } from './config';
-import { getCommits } from './lib/getCommits';
+import { Commit, getCommits } from './lib/getCommits';
 import { getPullRequest } from './lib/getPullRequest';
+import {
+  createOutputFoundLog,
+  createOutputNotFoundLog,
+} from './lib/helpers/createOuputLog';
 import { parseSearchInput } from './lib/parseSearchInput';
 import { searchAllCommitMessages } from './lib/searchCommitMessages';
+import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
 
 type Run = () => Promise<void>;
 const run: Run = async () => {
@@ -16,6 +21,8 @@ const run: Run = async () => {
     MATCH_FOUND_OUTPUT_ID,
     SEARCH_INPUT_ID,
   } = config;
+
+  const { COMMIT_MESSAGES, PULL_REQUEST } = config.SEARCH_OPTIONS;
 
   try {
     const context = new Context();
@@ -36,27 +43,69 @@ const run: Run = async () => {
 
     const octokit = getOctokit(githubToken);
 
-    const commits = await getCommits(octokit, context);
-    const { result, commit } = searchAllCommitMessages(commits, phrase);
+    const searchResults: {
+      commitMessagesSearchResult?: boolean;
+      commit?: Commit;
+      titleSearchResult?: boolean;
+    } = {};
 
-    const pullRequest: PullsGetResponseData = await getPullRequest(
-      octokit,
-      context,
-    );
+    // TODO: create a store of keeping results?
 
-    debug(JSON.stringify(pullRequest));
+    if (searchOptions.has(COMMIT_MESSAGES)) {
+      const commits = await getCommits(octokit, context);
+      const {
+        result: commitMessagesSearchResult,
+        commit,
+      } = searchAllCommitMessages(commits, phrase);
 
-    if (result) {
-      console.log(
-        `⏭ "${phrase}" found in all commit messages. skipping workflow...`,
+      searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
+      searchResults.commit = commit;
+    }
+
+    if (searchOptions.has(PULL_REQUEST)) {
+      const pullRequest: PullsGetResponseData = await getPullRequest(
+        octokit,
+        context,
       );
 
-      setOutput(MATCH_FOUND_OUTPUT_ID, result);
+      debug(
+        JSON.stringify({ title: pullRequest.title, body: pullRequest.body }),
+      );
+
+      const { result: titleSearchResult } = searchPullRequestMessage(
+        pullRequest,
+        phrase,
+      );
+
+      searchResults.titleSearchResult = titleSearchResult;
+    }
+
+    const {
+      commit,
+      commitMessagesSearchResult,
+      titleSearchResult,
+    } = searchResults;
+
+    // TODO: use store. has 'pass' props for skipping workflow
+
+    if (commitMessagesSearchResult || titleSearchResult) {
+      const foundLog = createOutputFoundLog({
+        commitMessagesSearchResult,
+        titleSearchResult,
+      });
+
+      console.log(`⏭ "${phrase}" found in: ${foundLog}. skipping workflow...`);
+
+      setOutput(MATCH_FOUND_OUTPUT_ID, true);
     } else {
+      const notFoundLog = createOutputNotFoundLog({
+        commitMessagesSearchResult,
+        titleSearchResult,
+        commit,
+      });
+
       console.log(
-        `❗ "${phrase}" not found in "${commit!.message}" sha: ${
-          commit!.sha
-        }. continuing workflow...`,
+        `❗ "${phrase}" not found in ${notFoundLog}. continuing workflow...`,
       );
 
       setOutput(MATCH_FOUND_OUTPUT_ID, null);

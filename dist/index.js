@@ -145,6 +145,31 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 /***/ }),
 
+/***/ 6130:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createOutputNotFoundLog = exports.createOutputFoundLog = void 0;
+exports.createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult, message = 'title', }) => {
+    let log = '';
+    log += commitMessagesSearchResult ? 'all commit message' : '';
+    log += titleSearchResult ? ` & ${message}` : '';
+    return log.replace(/^ &/i, '');
+};
+exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResult, commit, message, }) => {
+    let log = '';
+    log += !commitMessagesSearchResult
+        ? `${commit.message} sha: ${commit.sha}`
+        : '';
+    log += !titleSearchResult ? ` & ${message}` : '';
+    return log.replace(/^ &/i, '');
+};
+
+
+/***/ }),
+
 /***/ 4411:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -223,6 +248,34 @@ exports.searchAllCommitMessages = (commits, phrase) => {
 
 /***/ }),
 
+/***/ 1616:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.searchPullRequestMessage = void 0;
+const core_1 = __webpack_require__(2186);
+exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = { textToSearch: 'title' }) => {
+    let message = '';
+    if (textToSearch === 'title' || textToSearch === 'title & body') {
+        core_1.debug(`Searching for ${phrase} in title`);
+        message += title.includes(phrase) ? title : '';
+    }
+    if (textToSearch === 'body' || textToSearch === 'title & body') {
+        core_1.debug(`Searching for ${phrase} in body`);
+        message += body.includes(phrase) ? ' & body' : '';
+    }
+    const result = !message.replace(/^( & )/i, '');
+    if (result) {
+        return { result, message: undefined };
+    }
+    return { result, message };
+};
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -259,11 +312,14 @@ const context_1 = __webpack_require__(4087);
 const config_1 = __webpack_require__(88);
 const getCommits_1 = __webpack_require__(764);
 const getPullRequest_1 = __webpack_require__(9538);
+const createOuputLog_1 = __webpack_require__(6130);
 const parseSearchInput_1 = __webpack_require__(5340);
 const searchCommitMessages_1 = __webpack_require__(7835);
+const searchPullRequestMessage_1 = __webpack_require__(1616);
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, MATCH_FOUND_OUTPUT_ID, SEARCH_INPUT_ID, } = config_1.config;
+    const { COMMIT_MESSAGES, PULL_REQUEST } = config_1.config.SEARCH_OPTIONS;
     try {
         const context = new context_1.Context();
         const githubToken = core_1.getInput(GITHUB_TOKEN_INPUT_ID, {
@@ -277,16 +333,37 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
         const octokit = github_1.getOctokit(githubToken);
-        const commits = yield getCommits_1.getCommits(octokit, context);
-        const { result, commit } = searchCommitMessages_1.searchAllCommitMessages(commits, phrase);
-        const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);
-        core_1.debug(JSON.stringify(pullRequest));
-        if (result) {
-            console.log(`⏭ "${phrase}" found in all commit messages. skipping workflow...`);
-            core_1.setOutput(MATCH_FOUND_OUTPUT_ID, result);
+        const searchResults = {};
+        // TODO: create a store of keeping results?
+        if (searchOptions.has(COMMIT_MESSAGES)) {
+            const commits = yield getCommits_1.getCommits(octokit, context);
+            const { result: commitMessagesSearchResult, commit, } = searchCommitMessages_1.searchAllCommitMessages(commits, phrase);
+            searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
+            searchResults.commit = commit;
+        }
+        if (searchOptions.has(PULL_REQUEST)) {
+            const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);
+            core_1.debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
+            const { result: titleSearchResult } = searchPullRequestMessage_1.searchPullRequestMessage(pullRequest, phrase);
+            searchResults.titleSearchResult = titleSearchResult;
+        }
+        const { commit, commitMessagesSearchResult, titleSearchResult, } = searchResults;
+        // TODO: use store. has 'pass' props for skipping workflow
+        if (commitMessagesSearchResult || titleSearchResult) {
+            const foundLog = createOuputLog_1.createOutputFoundLog({
+                commitMessagesSearchResult,
+                titleSearchResult,
+            });
+            console.log(`⏭ "${phrase}" found in: ${foundLog}. skipping workflow...`);
+            core_1.setOutput(MATCH_FOUND_OUTPUT_ID, true);
         }
         else {
-            console.log(`❗ "${phrase}" not found in "${commit.message}" sha: ${commit.sha}. continuing workflow...`);
+            const notFoundLog = createOuputLog_1.createOutputNotFoundLog({
+                commitMessagesSearchResult,
+                titleSearchResult,
+                commit,
+            });
+            console.log(`❗ "${phrase}" not found in ${notFoundLog}. continuing workflow...`);
             core_1.setOutput(MATCH_FOUND_OUTPUT_ID, null);
         }
     }
