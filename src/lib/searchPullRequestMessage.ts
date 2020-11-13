@@ -23,15 +23,17 @@ export const searchPullRequestMessage: SearchPullRequestMessage = (
   let message = '';
   if (textToSearch === 'title' || textToSearch === 'title & body') {
     debug(`Searching for ${phrase} in title`);
-    message += title.includes(phrase) ? title : '';
+    message += !title.includes(phrase) ? title : '';
   }
 
   if (textToSearch === 'body' || textToSearch === 'title & body') {
     debug(`Searching for ${phrase} in body`);
-    message += body.includes(phrase) ? ' & body' : '';
+    message += !body.includes(phrase) ? ' & body' : '';
   }
 
-  const result = !message.replace(/^( & )/i, '');
+  message = message.replace(/^( & )/i, '');
+
+  const result = !message;
 
   if (result) {
     return { result, message: undefined };
