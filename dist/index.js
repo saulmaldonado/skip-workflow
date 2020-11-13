@@ -155,7 +155,7 @@ exports.createOutputNotFoundLog = exports.createOutputFoundLog = void 0;
 const leadingAmpersandRegex = /^( & )/;
 exports.createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult, message = 'title', phrase, }) => {
     let log = '';
-    log += commitMessagesSearchResult ? 'all commit message' : '';
+    log += commitMessagesSearchResult ? 'all commit messages' : '';
     log += titleSearchResult ? ` & ${message}` : '';
     log = log.replace(leadingAmpersandRegex, '');
     return `⏭ "${phrase}" found in: ${log}. skipping workflow...`;
@@ -163,13 +163,13 @@ exports.createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult,
 exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     let log = '';
     if (commitMessagesSearchResult === false) {
-        log += `${commit.message} sha: ${commit.sha}`;
+        log += `commit message: ${commit.message} sha: ${commit.sha}`;
     }
     if (titleSearchResult === false) {
-        log += ` & ${message}`;
+        log += ` & pull request title: ${message}`;
     }
     log = log.replace(leadingAmpersandRegex, '');
-    return `❗ "${phrase}" not found in ${log}. continuing workflow...`;
+    return `❗ "${phrase}" not found in: ${log}. continuing workflow...`;
 };
 
 

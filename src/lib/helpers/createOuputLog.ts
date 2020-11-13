@@ -24,7 +24,7 @@ export const createOutputFoundLog: CreateOutputFoundLog = ({
   phrase,
 }) => {
   let log = '';
-  log += commitMessagesSearchResult ? 'all commit message' : '';
+  log += commitMessagesSearchResult ? 'all commit messages' : '';
   log += titleSearchResult ? ` & ${message}` : '';
   log = log.replace(leadingAmpersandRegex, '');
 
@@ -41,14 +41,14 @@ export const createOutputNotFoundLog: CreateOutputNotFoundLog = ({
   let log = '';
 
   if (commitMessagesSearchResult === false) {
-    log += `${commit!.message} sha: ${commit!.sha}`;
+    log += `commit message: ${commit!.message} sha: ${commit!.sha}`;
   }
 
   if (titleSearchResult === false) {
-    log += ` & ${message}`;
+    log += ` & pull request title: ${message}`;
   }
 
   log = log.replace(leadingAmpersandRegex, '');
 
-  return `❗ "${phrase}" not found in ${log}. continuing workflow...`;
+  return `❗ "${phrase}" not found in: ${log}. continuing workflow...`;
 };
