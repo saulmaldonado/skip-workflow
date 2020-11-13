@@ -2,6 +2,10 @@ import { debug } from 'console';
 import { Commit } from './getCommits';
 import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
 
+export type SearchCommitMessagesResult =
+  | { result: true; commit: undefined }
+  | { result: false; commit: Commit };
+
 type SearchCommitMessages = (
   commits: Commit[],
   phrase: string,

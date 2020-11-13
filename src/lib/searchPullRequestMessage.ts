@@ -5,7 +5,11 @@ type SearchPullRequestMessage = (
   pullRequest: PullsGetResponseData,
   phrase: string,
   options?: SearchPullRequestMessageOptions,
-) => { result: true; message: undefined } | { result: false; message: string };
+) => SearchPullRequestMessageResult;
+
+type SearchPullRequestMessageResult =
+  | { result: true; message: undefined }
+  | { result: false; message: string };
 
 type SearchPullRequestMessageOptions = {
   textToSearch: 'title' | 'body' | 'title & body';

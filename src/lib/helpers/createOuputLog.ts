@@ -1,27 +1,34 @@
 import { Commit } from '../getCommits';
 
-type CreateOutputFoundLog = (result: {
+type CreateOutputLogParameters = {
   commitMessagesSearchResult?: boolean;
   titleSearchResult?: boolean;
   message?: string;
-}) => string;
+  phrase: string;
+};
 
-type CreateOutputNotFoundLog = (result: {
-  commitMessagesSearchResult?: boolean;
-  titleSearchResult?: boolean;
-  message?: string;
-  commit?: Commit;
-}) => string;
+type CreateOutputFoundLog = (args: CreateOutputLogParameters) => string;
+
+type CreateOutputNotFoundLog = (
+  args: CreateOutputLogParameters & {
+    commit?: Commit;
+  },
+) => string;
+
+const leadingAmpersandRegex = /^( & )/;
 
 export const createOutputFoundLog: CreateOutputFoundLog = ({
   commitMessagesSearchResult,
   titleSearchResult,
   message = 'title',
+  phrase,
 }) => {
   let log = '';
   log += commitMessagesSearchResult ? 'all commit message' : '';
   log += titleSearchResult ? ` & ${message}` : '';
-  return log.replace(/^ &/i, '');
+  log = log.replace(leadingAmpersandRegex, '');
+
+  return `⏭ "${phrase}" found in: ${log}. skipping workflow...`;
 };
 
 export const createOutputNotFoundLog: CreateOutputNotFoundLog = ({
@@ -29,11 +36,14 @@ export const createOutputNotFoundLog: CreateOutputNotFoundLog = ({
   titleSearchResult,
   commit,
   message,
+  phrase,
 }) => {
   let log = '';
   log += !commitMessagesSearchResult
     ? `${commit!.message} sha: ${commit!.sha}`
     : '';
   log += !titleSearchResult ? ` & ${message}` : '';
-  return log.replace(/^ &/i, '');
+  log = log.replace(leadingAmpersandRegex, '');
+
+  return `❗ "${phrase}" not found in ${log}. continuing workflow...`;
 };
