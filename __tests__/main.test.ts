@@ -3,13 +3,24 @@ import * as command from '@actions/core/lib/command';
 import * as core from '@actions/core';
 import run from '../src/run';
 import { config } from '../src/config';
+import { pullRequestCache } from '../src/lib/getPullRequest';
 
 describe('Integration Test: main', () => {
   const mockGithubToken = 'githubToken';
-
   const mockRepo = 'skip-workflow';
   const mockOwner = 'github-action';
   const mockPhrase = 'docs';
+  const mockPrId = 1;
+  const mockRef = `refs/pull/${mockPrId}/merge`;
+
+  const mockEnv = {
+    GITHUB_REF: mockRef,
+    GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
+    'INPUT_GITHUB-TOKEN': mockGithubToken,
+    INPUT_PHRASE: mockPhrase,
+  };
+
+  const oldEnv = { ...process.env };
 
   const mockOctokit = github.getOctokit(mockGithubToken);
 
@@ -18,20 +29,7 @@ describe('Integration Test: main', () => {
   let issueCommandSpy: jest.SpyInstance;
   let setFailedSpy: jest.SpyInstance;
   let getCommitSpy: jest.SpyInstance;
-
-  const mockPrId = 1;
-  const mockRef = `refs/pull/${mockPrId}/merge`;
-  const mockSearchInput = JSON.stringify(['commit_messages']);
-
-  const mockEnv = {
-    GITHUB_REF: mockRef,
-    GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
-    'INPUT_GITHUB-TOKEN': mockGithubToken,
-    INPUT_PHRASE: mockPhrase,
-    INPUT_SEARCH: mockSearchInput,
-  };
-
-  const oldEnv = { ...process.env };
+  let getPullRequestSpy: jest.SpyInstance;
 
   beforeAll(async () => {
     jest.resetModules();
@@ -48,6 +46,8 @@ describe('Integration Test: main', () => {
 
     issueCommandSpy = jest.spyOn(command, 'issueCommand');
     setFailedSpy = jest.spyOn(core, 'setFailed');
+
+    getPullRequestSpy = jest.spyOn(mockOctokit.pulls, 'get');
   });
 
   afterAll(() => {
@@ -55,68 +55,130 @@ describe('Integration Test: main', () => {
     process.env = oldEnv;
   });
 
-  it('should set output to true when all commit message match', async () => {
-    const mockCommits = [
-      {
-        commit: { message: 'docs: add docs', url: 'https://example.com' },
-        sha: '123456',
-      },
-      {
-        commit: { message: 'docs: edit docs', url: 'https://example.com' },
-        sha: '456789',
-      },
-    ];
-
-    listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
-
-    await run();
-
-    expect(issueCommandSpy).toBeCalledWith(
-      'set-output',
-      {
-        name: config.MATCH_FOUND_OUTPUT_ID,
-      },
-      true,
-    );
-  });
-
-  it("should set output to false when one or more commit messages don't match", async () => {
-    const mockCommits = [
-      {
-        commit: { message: 'fix: fix code', url: 'https://example.com' },
-        sha: '123456',
-      },
-      {
-        commit: { message: 'docs: edit docs', url: 'https://example.com' },
-        sha: '456789',
-      },
-    ];
-
-    listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
-
-    await run();
-
-    expect(issueCommandSpy).toBeCalledWith(
-      'set-output',
-      {
-        name: config.MATCH_FOUND_OUTPUT_ID,
-      },
-      null,
-    );
-  });
-
-  it('should fail and set error when an error is throw', async () => {
-    const mockNetworkError = new Error('API not available');
-
-    listCommitsSpy.mockImplementationOnce(() => {
-      throw mockNetworkError;
+  describe('Search in: commit_messages', () => {
+    beforeAll(() => {
+      process.env.INPUT_SEARCH = JSON.stringify(['commit_messages']);
     });
 
-    const mockFn = jest.fn();
-    setFailedSpy.mockImplementationOnce(mockFn);
+    it('should set output to true when all commit message match', async () => {
+      const mockCommits = [
+        {
+          commit: { message: 'docs: add docs', url: 'https://example.com' },
+          sha: '123456',
+        },
+        {
+          commit: { message: 'docs: edit docs', url: 'https://example.com' },
+          sha: '456789',
+        },
+      ];
 
-    await run();
+      listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
 
-    expect(setFailedSpy).toBeCalledWith(mockNetworkError);
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        true,
+      );
+    });
+
+    it("should set output to false when one or more commit messages don't match", async () => {
+      const mockCommits = [
+        {
+          commit: { message: 'fix: fix code', url: 'https://example.com' },
+          sha: '123456',
+        },
+        {
+          commit: { message: 'docs: edit docs', url: 'https://example.com' },
+          sha: '456789',
+        },
+      ];
+
+      listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        null,
+      );
+    });
+
+    it('should fail and set error when an error is throw', async () => {
+      const mockNetworkError = new Error('API not available');
+
+      listCommitsSpy.mockImplementationOnce(() => {
+        throw mockNetworkError;
+      });
+
+      const mockFn = jest.fn();
+      setFailedSpy.mockImplementationOnce(mockFn);
+
+      await run();
+
+      expect(setFailedSpy).toBeCalledWith(mockNetworkError);
+    });
+  });
+
+  describe('Search in: pull_request', () => {
+    beforeAll(() => {
+      process.env.INPUT_SEARCH = JSON.stringify(['pull_request']);
+    });
+
+    it('should set output to true when pull request title matches', async () => {
+      const mockTitle = 'docs: edit docs';
+      const mockBody = `
+    Edits docs
+    `;
+
+      getPullRequestSpy.mockImplementationOnce(() => ({
+        data: {
+          title: mockTitle,
+          body: mockBody,
+        },
+      }));
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        true,
+      );
+    });
+
+    it('should set output to null when pull request title does not match', async () => {
+      const mockTitle = 'fix: fix code';
+      const mockBody = `
+    Fix code
+    `;
+
+      getPullRequestSpy.mockImplementationOnce(() => ({
+        data: {
+          title: mockTitle,
+          body: mockBody,
+        },
+      }));
+
+      pullRequestCache.cache = null;
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        null,
+      );
+    });
   });
 });

@@ -162,10 +162,12 @@ exports.createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult,
 };
 exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     let log = '';
-    log += !commitMessagesSearchResult
-        ? `${commit.message} sha: ${commit.sha}`
-        : '';
-    log += !titleSearchResult ? ` & ${message}` : '';
+    if (commitMessagesSearchResult === false) {
+        log += `${commit.message} sha: ${commit.sha}`;
+    }
+    if (titleSearchResult === false) {
+        log += ` & ${message}`;
+    }
     log = log.replace(leadingAmpersandRegex, '');
     return `❗ "${phrase}" not found in ${log}. continuing workflow...`;
 };

@@ -1,4 +1,4 @@
-import { removeExtraneousWhiteSpace } from '../../src/lib/helpers/removeExtraneousWhiteSpace';
+import { removeExtraneousWhiteSpace } from '../../../src/lib/helpers/removeExtraneousWhiteSpace';
 
 describe('Unit Test: removeExtraneousWhiteSpace', () => {
   it('should remove extra whitespace from string', () => {
