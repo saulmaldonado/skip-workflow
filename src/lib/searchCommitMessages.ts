@@ -9,7 +9,7 @@ export type SearchCommitMessagesResult =
 type SearchCommitMessages = (
   commits: Commit[],
   phrase: string,
-) => { result: true; commit: undefined } | { result: false; commit: Commit };
+) => SearchCommitMessagesResult;
 
 /**
  * Searches all commits for message with included matching phrase. Case and whitespace insensitive.

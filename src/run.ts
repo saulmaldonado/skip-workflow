@@ -3,25 +3,23 @@ import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
 import { config } from './config';
 import { Commit } from './lib/getCommits';
-import {
-  createOutputFoundLog,
-  createOutputNotFoundLog,
-} from './lib/helpers/createOuputLog';
+import { generateOutput } from './lib/generateOutput';
 import { parseSearchInput } from './lib/parseSearchInput';
 import { searchInCommits } from './searchInCommits';
 import { searchInPullRequest } from './searchInPullRequest';
 
 export type SearchResults = {
   commitMessagesSearchResult?: boolean;
-  commit?: Commit;
   titleSearchResult?: boolean;
+  commit?: Commit;
+  message?: string;
 };
 
 const {
   GITHUB_TOKEN_INPUT_ID,
   PHRASE_INPUT_ID,
-  MATCH_FOUND_OUTPUT_ID,
   SEARCH_INPUT_ID,
+  MATCH_FOUND_OUTPUT_ID,
   SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST },
 } = config;
 
@@ -52,54 +50,28 @@ const run: Run = async () => {
       const {
         result: commitMessagesSearchResult,
         commit,
-      } = await searchInCommits({
-        octokit,
-        context,
-        phrase,
-      });
+      } = await searchInCommits(octokit, context, phrase);
 
       searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
       searchResults.commit = commit;
     }
 
     if (searchOptions.has(PULL_REQUEST)) {
-      const { result: titleSearchResult } = await searchInPullRequest({
-        context,
+      const { result: titleSearchResult, message } = await searchInPullRequest(
         octokit,
+        context,
         phrase,
-      });
+      );
 
       searchResults.titleSearchResult = titleSearchResult;
+      searchResults.message = message;
     }
 
-    const {
-      commit,
-      commitMessagesSearchResult,
-      titleSearchResult,
-    } = searchResults;
+    const { log, result } = generateOutput({ ...searchResults, phrase });
 
-    if (commitMessagesSearchResult || titleSearchResult) {
-      console.log(
-        createOutputFoundLog({
-          commitMessagesSearchResult,
-          titleSearchResult,
-          phrase,
-        }),
-      );
+    console.log(log);
 
-      setOutput(MATCH_FOUND_OUTPUT_ID, true);
-    } else {
-      console.log(
-        createOutputNotFoundLog({
-          commitMessagesSearchResult,
-          titleSearchResult,
-          commit,
-          phrase,
-        }),
-      );
-
-      setOutput(MATCH_FOUND_OUTPUT_ID, null);
-    }
+    setOutput(MATCH_FOUND_OUTPUT_ID, result);
   } catch (error) {
     debug(error.stack ?? 'No error stack trace');
 

@@ -14,6 +14,13 @@ export const pullRequestCache: PullRequestCache = {
   cache: null,
 };
 
+/**
+ * Requests pull request object from github API
+ * @param {Octokit} octokit
+ * @param {Context} context
+ *
+ * @returns {PullsGetResponseData} pull request object
+ */
 export const getPullRequest: GetPullRequest = async (octokit, context) => {
   if (pullRequestCache?.cache) return pullRequestCache.cache;
 

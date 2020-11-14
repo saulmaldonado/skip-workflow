@@ -15,6 +15,15 @@ type SearchPullRequestMessageOptions = {
   textToSearch: 'title' | 'body' | 'title & body';
 };
 
+/**
+ *
+ * @param {PullsGetResponseData} pullRequest Pull request object
+ * @param {string} phrase phrase to search
+ * @param {SearchPullRequestMessageOptions} options options
+ *
+ * @returns {SearchPullRequestMessageResult} result object with search result
+ * and message is applicable
+ */
 export const searchPullRequestMessage: SearchPullRequestMessage = (
   { title, body },
   phrase,

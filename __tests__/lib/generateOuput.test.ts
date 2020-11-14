@@ -1,7 +1,7 @@
 import {
   createOutputFoundLog,
   createOutputNotFoundLog,
-} from '../../../src/lib/helpers/createOuputLog';
+} from '../../src/lib/generateOutput';
 
 describe('Unit Test: createOutputLog', () => {
   const mockPhrase = 'docs';
