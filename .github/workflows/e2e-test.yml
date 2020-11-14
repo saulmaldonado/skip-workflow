@@ -23,7 +23,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           phrase: '[skip-workflow]'
-          pr-id: 6
+          search: '["commit_messages", "pull_request"]'
+          pr-id: 13
 
   test-action:
     needs: skip-workflow-test-job
