@@ -1,15 +1,15 @@
 import { debug } from 'console';
 import { Commit } from './getCommits';
+import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
 
-type RemoveExtraneousWhiteSpace = (string: string) => string;
-
-const removeExtraneousWhiteSpace: RemoveExtraneousWhiteSpace = (string) =>
-  string.replace(/\s+/g, ' ').trim();
+export type SearchCommitMessagesResult =
+  | { result: true; commit: undefined }
+  | { result: false; commit: Commit };
 
 type SearchCommitMessages = (
   commits: Commit[],
   phrase: string,
-) => { result: true; commit: undefined } | { result: false; commit: Commit };
+) => SearchCommitMessagesResult;
 
 /**
  * Searches all commits for message with included matching phrase. Case and whitespace insensitive.

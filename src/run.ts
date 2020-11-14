@@ -2,17 +2,29 @@ import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
 import { config } from './config';
-import { getCommits } from './lib/getCommits';
-import { searchAllCommitMessages } from './lib/searchCommitMessages';
+import { Commit } from './lib/getCommits';
+import { generateOutput } from './lib/generateOutput';
+import { parseSearchInput } from './lib/parseSearchInput';
+import { searchInCommits } from './searchInCommits';
+import { searchInPullRequest } from './searchInPullRequest';
+
+export type SearchResults = {
+  commitMessagesSearchResult?: boolean;
+  titleSearchResult?: boolean;
+  commit?: Commit;
+  message?: string;
+};
+
+const {
+  GITHUB_TOKEN_INPUT_ID,
+  PHRASE_INPUT_ID,
+  SEARCH_INPUT_ID,
+  MATCH_FOUND_OUTPUT_ID,
+  SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST },
+} = config;
 
 type Run = () => Promise<void>;
 const run: Run = async () => {
-  const {
-    GITHUB_TOKEN_INPUT_ID,
-    PHRASE_INPUT_ID,
-    MATCH_FOUND_OUTPUT_ID,
-  } = config;
-
   try {
     const context = new Context();
 
@@ -24,27 +36,42 @@ const run: Run = async () => {
     const phrase: string = getInput(PHRASE_INPUT_ID, { required: true });
     debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
 
+    const searchInput = getInput(SEARCH_INPUT_ID, { required: true });
+    debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
+
+    const searchOptions = parseSearchInput(searchInput);
+    debug(`options: ${[...searchOptions].toString()}`);
+
     const octokit = getOctokit(githubToken);
 
-    const commits = await getCommits(octokit, context);
+    const searchResults: SearchResults = {};
 
-    const { result, commit } = searchAllCommitMessages(commits, phrase);
+    if (searchOptions.has(COMMIT_MESSAGES)) {
+      const {
+        result: commitMessagesSearchResult,
+        commit,
+      } = await searchInCommits(octokit, context, phrase);
 
-    if (result) {
-      console.log(
-        `⏭ "${phrase}" found in all commit messages. skipping workflow...`,
-      );
-
-      setOutput(MATCH_FOUND_OUTPUT_ID, result);
-    } else {
-      console.log(
-        `❗ "${phrase}" not found in "${commit!.message}" sha: ${
-          commit!.sha
-        }. continuing workflow...`,
-      );
-
-      setOutput(MATCH_FOUND_OUTPUT_ID, null);
+      searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
+      searchResults.commit = commit;
     }
+
+    if (searchOptions.has(PULL_REQUEST)) {
+      const { result: titleSearchResult, message } = await searchInPullRequest(
+        octokit,
+        context,
+        phrase,
+      );
+
+      searchResults.titleSearchResult = titleSearchResult;
+      searchResults.message = message;
+    }
+
+    const { log, result } = generateOutput({ ...searchResults, phrase });
+
+    console.log(log);
+
+    setOutput(MATCH_FOUND_OUTPUT_ID, result);
   } catch (error) {
     debug(error.stack ?? 'No error stack trace');
 
