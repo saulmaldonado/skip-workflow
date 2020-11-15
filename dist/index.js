@@ -100,7 +100,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getCommits = void 0;
-const console_1 = __webpack_require__(7082);
+const core_1 = __webpack_require__(2186);
 const getPrId_1 = __webpack_require__(1126);
 /**
  *
@@ -110,8 +110,17 @@ const getPrId_1 = __webpack_require__(1126);
  * @returns {Promise<{message: string, sha: string}[]>} Promise if commit messages and shas array
  */
 exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
-    const { pulls } = octokit;
+    const { pulls, repos } = octokit;
     const { ref, repo: { owner, repo }, } = context;
+    if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+        const { data: { sha, commit: { message }, url, }, } = yield repos.getCommit({
+            owner,
+            repo,
+            ref,
+        });
+        core_1.debug(`Found commit sha: ${sha}. ${url}`);
+        return [{ message, sha }];
+    }
     const prId = getPrId_1.getPrId(ref);
     const { data: commits } = yield pulls.listCommits({
         owner,
@@ -119,7 +128,7 @@ exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, fun
         repo,
     });
     return commits.map(({ commit: { message, url }, sha }) => {
-        console_1.debug(`Found commit sha: ${sha} in pull request: ${prId}. ${url}`);
+        core_1.debug(`Found commit sha: ${sha} in pull request: ${prId}. ${url}`);
         return { message, sha };
     });
 });
@@ -468,6 +477,10 @@ const searchPullRequestMessage_1 = __webpack_require__(1616);
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
 exports.searchInPullRequest = (octokit, context, phrase) => __awaiter(void 0, void 0, void 0, function* () {
+    const { ref } = context;
+    if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+        return { result: undefined, message: undefined };
+    }
     const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);
     core_1.debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
     return searchPullRequestMessage_1.searchPullRequestMessage(pullRequest, phrase);

@@ -4,7 +4,7 @@ import { SearchIn } from './lib/searchIn';
 import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
 
 type SearchInPullRequestResult = {
-  result: boolean;
+  result?: boolean;
   message?: string;
 };
 
@@ -20,6 +20,11 @@ export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
   context,
   phrase,
 ) => {
+  const { ref } = context;
+  if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+    return { result: undefined, message: undefined };
+  }
+
   const pullRequest = await getPullRequest(octokit, context);
 
   debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
