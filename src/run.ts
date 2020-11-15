@@ -7,7 +7,10 @@ import { generateOutput } from './lib/generateOutput';
 import { parseSearchInput } from './lib/parseSearchInput';
 import { searchInCommits } from './searchInCommits';
 import { searchInPullRequest } from './searchInPullRequest';
-import { parsePrMessageOptionInput } from './lib/validateInput';
+import {
+  parsePhraseInput,
+  parsePrMessageOptionInput,
+} from './lib/validateInput';
 
 export type SearchResults = {
   commitMessagesSearchResult?: boolean;
@@ -35,14 +38,13 @@ const run: Run = async () => {
     });
     debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
 
-    const phrase = getInput(PHRASE_INPUT_ID, { required: true });
-    debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
-
     const searchInput = getInput(SEARCH_INPUT_ID, { required: true });
     debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
 
     const searchOptions = parseSearchInput(searchInput);
     debug(`options: ${[...searchOptions].toString()}`);
+
+    const phrase = parsePhraseInput(PHRASE_INPUT_ID);
 
     const prMessageOption = parsePrMessageOptionInput(PR_MESSAGE);
 

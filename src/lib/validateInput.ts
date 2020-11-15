@@ -27,3 +27,23 @@ export const parsePrMessageOptionInput: ValidateInput<'PR_MESSAGE'> = (
 
   return lowerCaseInput;
 };
+
+export const parsePhraseInput: ValidateInput<'PHRASE_INPUT_ID'> = (inputId) => {
+  const phrase = getInput(inputId, { required: true });
+  debug(`${inputId} input: ${phrase}`);
+
+  const regexRegex = /^\/.+\/[gmisut]*$/;
+
+  const isRegex = regexRegex.test(phrase);
+
+  if (isRegex) {
+    try {
+      RegExp(phrase);
+    } catch {
+      throw new Error(`Invalid Regex: ${phrase}`);
+    }
+    return phrase;
+  }
+
+  return removeExtraneousWhiteSpace(phrase).toLowerCase();
+};

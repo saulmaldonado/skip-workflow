@@ -291,11 +291,10 @@ const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
  * object with result and commit that does not match the phrase
  */
 exports.searchAllCommitMessages = (commits, phrase) => {
-    const lowercasePhrase = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
     const commit = commits.find(({ message, sha }) => {
         const lowercaseMessage = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(message).toLowerCase();
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-        return !lowercaseMessage.includes(lowercasePhrase);
+        return !lowercaseMessage.includes(phrase);
     });
     const result = !commit;
     if (result) {
@@ -351,7 +350,7 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parsePrMessageOptionInput = void 0;
+exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
@@ -366,6 +365,22 @@ exports.parsePrMessageOptionInput = (inputId) => {
         throw new Error(`${input} is not a valid input for ${inputId}`);
     }
     return lowerCaseInput;
+};
+exports.parsePhraseInput = (inputId) => {
+    const phrase = core_1.getInput(inputId, { required: true });
+    core_1.debug(`${inputId} input: ${phrase}`);
+    const regexRegex = /^\/.+\/[gmisut]*$/;
+    const isRegex = regexRegex.test(phrase);
+    if (isRegex) {
+        try {
+            RegExp(phrase);
+        }
+        catch (_a) {
+            throw new Error(`Invalid Regex: ${phrase}`);
+        }
+        return phrase;
+    }
+    return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
 
 
@@ -419,12 +434,11 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             required: true,
         });
         core_1.debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
-        const phrase = core_1.getInput(PHRASE_INPUT_ID, { required: true });
-        core_1.debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
         const searchInput = core_1.getInput(SEARCH_INPUT_ID, { required: true });
         core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
+        const phrase = validateInput_1.parsePhraseInput(PHRASE_INPUT_ID);
         const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};

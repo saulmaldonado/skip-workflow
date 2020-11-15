@@ -23,14 +23,12 @@ export const searchAllCommitMessages: SearchCommitMessages = (
   commits,
   phrase,
 ) => {
-  const lowercasePhrase = removeExtraneousWhiteSpace(phrase).toLowerCase();
-
   const commit = commits.find(({ message, sha }) => {
     const lowercaseMessage = removeExtraneousWhiteSpace(message).toLowerCase();
 
     debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
 
-    return !lowercaseMessage.includes(lowercasePhrase);
+    return !lowercaseMessage.includes(phrase);
   });
 
   const result = !commit;
