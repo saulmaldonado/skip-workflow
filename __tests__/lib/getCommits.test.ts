@@ -43,6 +43,7 @@ describe('Unit Test: getCommits', () => {
     jest.resetModules();
     process.env.GITHUB_REF = mockRef;
     process.env.GITHUB_REPOSITORY = `${mockOwner}/${mockRepo}`;
+    process.env.GITHUB_EVENT_NAME = 'pull_request';
 
     mockContext = (await import('@actions/github')).context; // workflow context is instantiated on import
 
@@ -82,7 +83,7 @@ describe('Unit Test: getCommits', () => {
     });
   });
 
-  it('should return a single commit when "ref" matches with "heads/main"', async () => {
+  it('should return a single commit when eventName matches with push event', async () => {
     process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
     mockContext = new Context();
 
@@ -98,7 +99,7 @@ describe('Unit Test: getCommits', () => {
     expect(result).toEqual(mockCommitResult);
   });
 
-  it('should return a single commit when "ref" matches with "heads/master"', async () => {
+  it('should return a single commit when eventName matches with push event', async () => {
     process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
     mockContext = new Context();
 

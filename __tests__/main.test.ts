@@ -18,6 +18,7 @@ describe('Integration Test: main', () => {
     GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
     'INPUT_GITHUB-TOKEN': mockGithubToken,
     INPUT_PHRASE: mockPhrase,
+    GITHUB_EVENT_NAME: 'pull_request',
   };
 
   const oldEnv = { ...process.env };

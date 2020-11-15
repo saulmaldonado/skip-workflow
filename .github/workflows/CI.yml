@@ -38,6 +38,5 @@ jobs:
             -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
             https://api.github.com/repos/saulmaldonado/skip-workflow/actions/workflows/3497271/dispatches \
             -d '{"ref":"main", "inputs": {"sha": "${{ github.event.pull_request.head.sha || github.sha }}"}}'
-             
-      - name: codecov
+
       - uses: codecov/codecov-action@v1
