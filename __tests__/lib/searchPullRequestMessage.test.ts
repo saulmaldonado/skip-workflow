@@ -63,7 +63,6 @@ describe('Unit Test: searchPullRequestMessage', () => {
           body: badMockBody,
         } as PullsGetResponseData,
         mockPhrase,
-        { textToSearch: 'title' },
       );
 
       expect(result).toEqual({
