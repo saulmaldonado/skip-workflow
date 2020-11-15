@@ -17,6 +17,8 @@ describe('Unit Test: getCommits', () => {
     unknown,
     Parameters<typeof octokit['pulls']['listCommits']>
   >;
+  let getCommitSpy: jest.SpyInstance;
+
   const mockCommits = [
     {
       commit: { message: 'message1', url: 'https://example.com' },
@@ -28,8 +30,13 @@ describe('Unit Test: getCommits', () => {
     },
   ];
 
+  const mockSingleCommit = {
+    commit: { message: 'message1', url: 'https://example.com' },
+    sha: '123456',
+  };
+
   const mockPrId = 1;
-  const mockRef = `refs/pull/${mockPrId}/merge`;
+  let mockRef = `refs/pull/${mockPrId}/merge`;
 
   beforeAll(async () => {
     jest.resetModules();
@@ -41,6 +48,9 @@ describe('Unit Test: getCommits', () => {
     listCommitsSpy = jest.spyOn(octokit.pulls, 'listCommits');
 
     listCommitsSpy.mockImplementation(() => ({ data: mockCommits }));
+
+    getCommitSpy = jest.spyOn(octokit.repos, 'getCommit');
+    getCommitSpy.mockImplementation(() => ({ data: mockSingleCommit }));
   });
 
   afterAll(() => {
@@ -69,5 +79,39 @@ describe('Unit Test: getCommits', () => {
       repo: mockRepo,
       pull_number: mockPrId,
     });
+  });
+
+  it('should return a single commit when "ref" matches with "heads/main"', async () => {
+    mockRef = 'refs/heads/main';
+    process.env.GITHUB_REF = mockRef;
+    mockContext = new Context();
+
+    const mockCommitResult = [
+      {
+        message: 'message1',
+        sha: '123456',
+      },
+    ];
+
+    const result = await getCommits(octokit, mockContext);
+
+    expect(result).toEqual(mockCommitResult);
+  });
+
+  it('should return a single commit when "ref" matches with "heads/master"', async () => {
+    mockRef = 'refs/heads/master';
+    process.env.GITHUB_REF = mockRef;
+    mockContext = new Context();
+
+    const mockCommitResult = [
+      {
+        message: 'message1',
+        sha: '123456',
+      },
+    ];
+
+    const result = await getCommits(octokit, mockContext);
+
+    expect(result).toEqual(mockCommitResult);
   });
 });
