@@ -11,10 +11,9 @@ type SearchPullRequestMessageResult =
   | { result: true; message: undefined }
   | { result: false; message: string };
 
-type SearchPullRequestMessageOptions = {
-  textToSearch: 'title' | 'body' | 'title & body';
+export type SearchPullRequestMessageOptions = {
+  textToSearch: 'title' | 'body' | 'title & body' | string;
 };
-
 /**
  *
  * @param {PullsGetResponseData} pullRequest Pull request object

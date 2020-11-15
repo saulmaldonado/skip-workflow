@@ -181,5 +181,33 @@ describe('Integration Test: main', () => {
         null,
       );
     });
+
+    it('should set output to true when pull request body matches', async () => {
+      const mockTitle = 'docs: edit docs';
+      const mockBody = `
+    Edits docs
+    `;
+
+      getPullRequestSpy.mockImplementationOnce(() => ({
+        data: {
+          title: mockTitle,
+          body: mockBody,
+        },
+      }));
+
+      pullRequestCache.cache = null;
+
+      process.env['INPUT_PR-MESSAGE'] = config.PR_MESSAGE_OPTIONS.BODY;
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        true,
+      );
+    });
   });
 });

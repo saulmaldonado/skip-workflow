@@ -19,7 +19,13 @@ exports.config = {
         PULL_REQUEST: 'pull_request',
         COMMIT_MESSAGES: 'commit_messages',
     },
+    PR_MESSAGE_OPTIONS: {
+        TITLE: 'title',
+        BODY: 'body',
+        TITLEANDBODY: 'title & body',
+    },
     PUSH_EVENT_NAME: 'push',
+    PR_MESSAGE: 'pr-message',
 };
 
 
@@ -339,6 +345,32 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
 
 /***/ }),
 
+/***/ 2895:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parsePrMessageOptionInput = void 0;
+const core_1 = __webpack_require__(2186);
+const config_1 = __webpack_require__(88);
+const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+exports.parsePrMessageOptionInput = (inputId) => {
+    const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
+    const input = core_1.getInput(inputId);
+    if (!input)
+        return config_1.config.PR_MESSAGE_OPTIONS.TITLE;
+    core_1.debug(`${inputId} input: ${input}`);
+    const lowerCaseInput = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(input).toLowerCase();
+    if (!options.has(lowerCaseInput)) {
+        throw new Error(`${input} is not a valid input for ${inputId}`);
+    }
+    return lowerCaseInput;
+};
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -377,7 +409,8 @@ const generateOutput_1 = __webpack_require__(8002);
 const parseSearchInput_1 = __webpack_require__(9538);
 const searchInCommits_1 = __webpack_require__(237);
 const searchInPullRequest_1 = __webpack_require__(269);
-const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, SEARCH_INPUT_ID, MATCH_FOUND_OUTPUT_ID, SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST }, } = config_1.config;
+const validateInput_1 = __webpack_require__(2895);
+const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, SEARCH_INPUT_ID, MATCH_FOUND_OUTPUT_ID, PR_MESSAGE, SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST }, } = config_1.config;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -392,6 +425,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
+        const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};
         if (searchOptions.has(COMMIT_MESSAGES)) {
@@ -400,7 +434,9 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             searchResults.commit = commit;
         }
         if (searchOptions.has(PULL_REQUEST)) {
-            const { result: titleSearchResult, message } = yield searchInPullRequest_1.searchInPullRequest(octokit, context, phrase);
+            const { result: titleSearchResult, message } = yield searchInPullRequest_1.searchInPullRequest(octokit, context, phrase, {
+                textToSearch: prMessageOption,
+            });
             searchResults.titleSearchResult = titleSearchResult;
             searchResults.message = message;
         }
@@ -468,6 +504,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchInPullRequest = void 0;
+/* eslint-disable @typescript-eslint/indent */
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
 const getPullRequest_1 = __webpack_require__(3644);
@@ -479,14 +516,13 @@ const searchPullRequestMessage_1 = __webpack_require__(1616);
  *
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
-exports.searchInPullRequest = (octokit, context, phrase) => __awaiter(void 0, void 0, void 0, function* () {
-    const { eventName } = context;
-    if (eventName === config_1.config.PUSH_EVENT_NAME) {
+exports.searchInPullRequest = (octokit, context, phrase, options) => __awaiter(void 0, void 0, void 0, function* () {
+    if (context.eventName === config_1.config.PUSH_EVENT_NAME) {
         return { result: undefined, message: undefined };
     }
     const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);
     core_1.debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
-    return searchPullRequestMessage_1.searchPullRequestMessage(pullRequest, phrase);
+    return searchPullRequestMessage_1.searchPullRequestMessage(pullRequest, phrase, options);
 });
 
 

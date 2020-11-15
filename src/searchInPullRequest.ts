@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/indent */
 import { debug } from '@actions/core';
 import { config } from './config';
 import { getPullRequest } from './lib/getPullRequest';
 import { SearchIn } from './lib/searchIn';
-import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
+import {
+  searchPullRequestMessage,
+  SearchPullRequestMessageOptions,
+} from './lib/searchPullRequestMessage';
 
 type SearchInPullRequestResult = {
   result?: boolean;
@@ -16,13 +20,11 @@ type SearchInPullRequestResult = {
  *
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
-export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
-  octokit,
-  context,
-  phrase,
-) => {
-  const { eventName } = context;
-  if (eventName === config.PUSH_EVENT_NAME) {
+export const searchInPullRequest: SearchIn<
+  SearchInPullRequestResult,
+  SearchPullRequestMessageOptions
+> = async (octokit, context, phrase, options) => {
+  if (context.eventName === config.PUSH_EVENT_NAME) {
     return { result: undefined, message: undefined };
   }
 
@@ -30,5 +32,5 @@ export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
 
   debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
 
-  return searchPullRequestMessage(pullRequest, phrase);
+  return searchPullRequestMessage(pullRequest, phrase, options);
 };
