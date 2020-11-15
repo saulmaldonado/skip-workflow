@@ -1,7 +1,7 @@
 {
   "name": "skip-workflow",
   "version": "1.0.0",
-  "description": "Github action for skipping workflows upon matching commit message, pull request message or tag",
+  "description": "Github action for skipping workflows upon matching commit message(s) or pull request title/body",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -40,7 +40,7 @@
     "eslint": "^7.8.1",
     "eslint-plugin-github": "^4.1.1",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^24.1.0",
+    "eslint-plugin-jest": "^24.1.3",
     "husky": ">=4",
     "jest": "^26.6.3",
     "jest-circus": "^26.4.2",
