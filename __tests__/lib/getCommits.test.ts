@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { config } from '../../src/config';
 import { getCommits } from '../../src/lib/getCommits';
 
 describe('Unit Test: getCommits', () => {
@@ -36,7 +37,7 @@ describe('Unit Test: getCommits', () => {
   };
 
   const mockPrId = 1;
-  let mockRef = `refs/pull/${mockPrId}/merge`;
+  const mockRef = `refs/pull/${mockPrId}/merge`;
 
   beforeAll(async () => {
     jest.resetModules();
@@ -82,8 +83,7 @@ describe('Unit Test: getCommits', () => {
   });
 
   it('should return a single commit when "ref" matches with "heads/main"', async () => {
-    mockRef = 'refs/heads/main';
-    process.env.GITHUB_REF = mockRef;
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
     mockContext = new Context();
 
     const mockCommitResult = [
@@ -99,8 +99,7 @@ describe('Unit Test: getCommits', () => {
   });
 
   it('should return a single commit when "ref" matches with "heads/master"', async () => {
-    mockRef = 'refs/heads/master';
-    process.env.GITHUB_REF = mockRef;
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
     mockContext = new Context();
 
     const mockCommitResult = [

@@ -1,5 +1,6 @@
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { config } from '../src/config';
 import { searchInPullRequest } from '../src/searchInPullRequest';
 
 describe('Unit TestL searchInPullRequest', () => {
@@ -12,6 +13,8 @@ describe('Unit TestL searchInPullRequest', () => {
   beforeAll(() => {
     oldEnv = { ...process.env };
     jest.resetModules();
+
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
   });
 
   afterAll(() => {
@@ -19,8 +22,6 @@ describe('Unit TestL searchInPullRequest', () => {
   });
 
   it('should not call api and should return an undefined result and message when ref matches with "refs/heads/main"', async () => {
-    const mockRef = 'refs/heads/main';
-    process.env.GITHUB_REF = mockRef;
     const mockContext = new Context();
 
     const result = await searchInPullRequest(
@@ -33,8 +34,6 @@ describe('Unit TestL searchInPullRequest', () => {
   });
 
   it('should not call api and should return an undefined result and message when ref matches with "refs/heads/master"', async () => {
-    const mockRef = 'refs/heads/master';
-    process.env.GITHUB_REF = mockRef;
     const mockContext = new Context();
 
     const result = await searchInPullRequest(

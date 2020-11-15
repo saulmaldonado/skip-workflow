@@ -19,6 +19,7 @@ exports.config = {
         PULL_REQUEST: 'pull_request',
         COMMIT_MESSAGES: 'commit_messages',
     },
+    PUSH_EVENT_NAME: 'push',
 };
 
 
@@ -102,6 +103,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getCommits = void 0;
 const core_1 = __webpack_require__(2186);
 const getPrId_1 = __webpack_require__(1126);
+const config_1 = __webpack_require__(88);
 /**
  *
  * @param {octokit} octokit Octokit instance
@@ -111,8 +113,8 @@ const getPrId_1 = __webpack_require__(1126);
  */
 exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
     const { pulls, repos } = octokit;
-    const { ref, repo: { owner, repo }, } = context;
-    if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+    const { ref, repo: { owner, repo }, eventName, } = context;
+    if (eventName === config_1.config.PUSH_EVENT_NAME) {
         const { data: { sha, commit: { message }, url, }, } = yield repos.getCommit({
             owner,
             repo,
@@ -467,6 +469,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchInPullRequest = void 0;
 const core_1 = __webpack_require__(2186);
+const config_1 = __webpack_require__(88);
 const getPullRequest_1 = __webpack_require__(3644);
 const searchPullRequestMessage_1 = __webpack_require__(1616);
 /**
@@ -477,8 +480,8 @@ const searchPullRequestMessage_1 = __webpack_require__(1616);
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
 exports.searchInPullRequest = (octokit, context, phrase) => __awaiter(void 0, void 0, void 0, function* () {
-    const { ref } = context;
-    if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+    const { eventName } = context;
+    if (eventName === config_1.config.PUSH_EVENT_NAME) {
         return { result: undefined, message: undefined };
     }
     const pullRequest = yield getPullRequest_1.getPullRequest(octokit, context);

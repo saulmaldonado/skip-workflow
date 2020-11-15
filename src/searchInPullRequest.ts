@@ -1,6 +1,6 @@
 import { debug } from '@actions/core';
+import { config } from './config';
 import { getPullRequest } from './lib/getPullRequest';
-import { isPushToMain } from './lib/helpers/isPushToMain';
 import { SearchIn } from './lib/searchIn';
 import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
 
@@ -21,8 +21,8 @@ export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
   context,
   phrase,
 ) => {
-  const { ref } = context;
-  if (isPushToMain(ref)) {
+  const { eventName } = context;
+  if (eventName === config.PUSH_EVENT_NAME) {
     return { result: undefined, message: undefined };
   }
 

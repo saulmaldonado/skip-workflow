@@ -8,8 +8,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
   const mockRepo = 'skip-workflow';
   const mockOwner = 'github-action';
   const mockPhrase = 'docs';
-  const mockRefMain = 'refs/heads/main';
-  const mockRefMaster = 'refs/heads/main';
+  const mockEventName = 'push';
 
   const mockEnv = {
     GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
@@ -44,32 +43,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
   });
 
   it('should return when single commit matches with phrase', async () => {
-    process.env.GITHUB_REF = mockRefMain;
-    process.env.INPUT_SEARCH = JSON.stringify([
-      'commit_messages',
-      'pull_request',
-    ]);
-
-    const mockCommit = {
-      commit: { message: 'docs: add docs', url: 'https://example.com' },
-      sha: '123456',
-    };
-
-    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommit }));
-
-    await run();
-
-    expect(issueCommandSpy).toBeCalledWith(
-      'set-output',
-      {
-        name: config.MATCH_FOUND_OUTPUT_ID,
-      },
-      true,
-    );
-  });
-
-  it('should return when single commit matches with phrase', async () => {
-    process.env.GITHUB_REF = mockRefMaster;
+    process.env.GITHUB_EVENT_NAME = mockEventName;
     process.env.INPUT_SEARCH = JSON.stringify([
       'commit_messages',
       'pull_request',
