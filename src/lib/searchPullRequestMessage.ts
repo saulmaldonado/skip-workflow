@@ -12,7 +12,7 @@ type SearchPullRequestMessageResult =
   | { result: false; message: string };
 
 export type SearchPullRequestMessageOptions = {
-  textToSearch?: 'title' | 'body' | 'title & body' | string;
+  textToSearch: 'title' | 'body' | 'title & body' | string;
 };
 /**
  *
@@ -26,7 +26,7 @@ export type SearchPullRequestMessageOptions = {
 export const searchPullRequestMessage: SearchPullRequestMessage = (
   { title, body },
   phrase,
-  { textToSearch = 'title' } = { textToSearch: 'title' },
+  { textToSearch } = { textToSearch: 'title' },
 ) => {
   let message = '';
   if (textToSearch === 'title' || textToSearch === 'title & body') {

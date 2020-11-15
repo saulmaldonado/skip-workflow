@@ -4,18 +4,18 @@ import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace
 
 type ValidateInput<T extends keyof typeof config> = (
   inputId: typeof config[T],
-) => string | undefined;
+) => string;
 
 export const parsePrMessageOptionInput: ValidateInput<'PR_MESSAGE'> = (
   inputId,
 ) => {
   const options: Set<string> = new Set(
-    ...Object.values(config.PR_MESSAGE_OPTIONS),
+    Object.values(config.PR_MESSAGE_OPTIONS),
   );
 
   const input = getInput(inputId);
 
-  if (!input) return undefined;
+  if (!input) return config.PR_MESSAGE_OPTIONS.TITLE;
 
   debug(`${inputId} input: ${input}`);
 

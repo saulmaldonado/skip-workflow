@@ -324,7 +324,7 @@ const core_1 = __webpack_require__(2186);
  * @returns {SearchPullRequestMessageResult} result object with search result
  * and message is applicable
  */
-exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch = 'title' } = { textToSearch: 'title' }) => {
+exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = { textToSearch: 'title' }) => {
     let message = '';
     if (textToSearch === 'title' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in title`);
@@ -356,10 +356,10 @@ const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.parsePrMessageOptionInput = (inputId) => {
-    const options = new Set(...Object.values(config_1.config.PR_MESSAGE_OPTIONS));
+    const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
     const input = core_1.getInput(inputId);
     if (!input)
-        return undefined;
+        return config_1.config.PR_MESSAGE_OPTIONS.TITLE;
     core_1.debug(`${inputId} input: ${input}`);
     const lowerCaseInput = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(input).toLowerCase();
     if (!options.has(lowerCaseInput)) {
