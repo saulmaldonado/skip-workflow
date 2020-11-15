@@ -14,7 +14,7 @@ export const parseSearchInput: ParseSearchInput = (searchInput) => {
   const {
     SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES },
   } = config;
-  const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
+  const searchOptions: string[] = [PULL_REQUEST, COMMIT_MESSAGES];
 
   const findOption = (option: string): string => {
     const lowerCaseOption = option.toLowerCase();

@@ -9,4 +9,4 @@ export const config = {
     COMMIT_MESSAGES: 'commit_messages',
   },
   PUSH_EVENT_NAME: 'push',
-};
+} as const;
