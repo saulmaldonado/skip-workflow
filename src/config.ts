@@ -8,5 +8,11 @@ export const config = {
     PULL_REQUEST: 'pull_request',
     COMMIT_MESSAGES: 'commit_messages',
   },
+  PR_MESSAGE_OPTIONS: {
+    TITLE: 'title',
+    BODY: 'body',
+    TITLEANDBODY: 'title & body',
+  },
   PUSH_EVENT_NAME: 'push',
+  PR_MESSAGE: 'pr-message',
 } as const;

@@ -9,6 +9,10 @@ inputs:
     required: true
     description: 'messages or tags to search phrase for'
     default: '["commit_messages"]'
+  pr-message:
+    required: true
+    description: 'defines where in pull request to search for phrase'
+    default: 'title'
   github-token:
     required: true
     description: 'workflow github token'

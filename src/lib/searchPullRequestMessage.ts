@@ -11,10 +11,9 @@ type SearchPullRequestMessageResult =
   | { result: true; message: undefined }
   | { result: false; message: string };
 
-type SearchPullRequestMessageOptions = {
-  textToSearch: 'title' | 'body' | 'title & body';
+export type SearchPullRequestMessageOptions = {
+  textToSearch?: 'title' | 'body' | 'title & body' | string;
 };
-
 /**
  *
  * @param {PullsGetResponseData} pullRequest Pull request object
@@ -27,7 +26,7 @@ type SearchPullRequestMessageOptions = {
 export const searchPullRequestMessage: SearchPullRequestMessage = (
   { title, body },
   phrase,
-  { textToSearch } = { textToSearch: 'title' },
+  { textToSearch = 'title' } = { textToSearch: 'title' },
 ) => {
   let message = '';
   if (textToSearch === 'title' || textToSearch === 'title & body') {
