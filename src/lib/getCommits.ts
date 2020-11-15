@@ -2,6 +2,7 @@ import { debug } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
 import { getPrId } from './getPrId';
+import { isPushToMain } from './helpers/isPushToMain';
 
 export type Commit = { message: string; sha: string };
 
@@ -25,7 +26,7 @@ export const getCommits: GetCommits = async (octokit, context) => {
     repo: { owner, repo },
   } = context;
 
-  if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+  if (isPushToMain(ref)) {
     const {
       data: {
         sha,

@@ -1,5 +1,6 @@
 import { debug } from '@actions/core';
 import { getPullRequest } from './lib/getPullRequest';
+import { isPushToMain } from './lib/helpers/isPushToMain';
 import { SearchIn } from './lib/searchIn';
 import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
 
@@ -21,7 +22,7 @@ export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
   phrase,
 ) => {
   const { ref } = context;
-  if (ref === 'refs/heads/main' || ref === 'refs/heads/master') {
+  if (isPushToMain(ref)) {
     return { result: undefined, message: undefined };
   }
 

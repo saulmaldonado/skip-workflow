@@ -8,4 +8,6 @@ export const config = {
     PULL_REQUEST: 'pull_request',
     COMMIT_MESSAGES: 'commit_messages',
   },
+  MAIN_HEAD_REF: 'refs/heads/main',
+  MASTER_HEAD_REF: 'refs/heads/master',
 };
