@@ -1,10 +1,11 @@
 import { debug } from '@actions/core';
+import { config } from './config';
 import { getPullRequest } from './lib/getPullRequest';
 import { SearchIn } from './lib/searchIn';
 import { searchPullRequestMessage } from './lib/searchPullRequestMessage';
 
 type SearchInPullRequestResult = {
-  result: boolean;
+  result?: boolean;
   message?: string;
 };
 
@@ -20,6 +21,11 @@ export const searchInPullRequest: SearchIn<SearchInPullRequestResult> = async (
   context,
   phrase,
 ) => {
+  const { eventName } = context;
+  if (eventName === config.PUSH_EVENT_NAME) {
+    return { result: undefined, message: undefined };
+  }
+
   const pullRequest = await getPullRequest(octokit, context);
 
   debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));

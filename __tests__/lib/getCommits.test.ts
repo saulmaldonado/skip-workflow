@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { config } from '../../src/config';
 import { getCommits } from '../../src/lib/getCommits';
 
 describe('Unit Test: getCommits', () => {
@@ -17,6 +18,8 @@ describe('Unit Test: getCommits', () => {
     unknown,
     Parameters<typeof octokit['pulls']['listCommits']>
   >;
+  let getCommitSpy: jest.SpyInstance;
+
   const mockCommits = [
     {
       commit: { message: 'message1', url: 'https://example.com' },
@@ -27,6 +30,11 @@ describe('Unit Test: getCommits', () => {
       sha: '456789',
     },
   ];
+
+  const mockSingleCommit = {
+    commit: { message: 'message1', url: 'https://example.com' },
+    sha: '123456',
+  };
 
   const mockPrId = 1;
   const mockRef = `refs/pull/${mockPrId}/merge`;
@@ -41,6 +49,9 @@ describe('Unit Test: getCommits', () => {
     listCommitsSpy = jest.spyOn(octokit.pulls, 'listCommits');
 
     listCommitsSpy.mockImplementation(() => ({ data: mockCommits }));
+
+    getCommitSpy = jest.spyOn(octokit.repos, 'getCommit');
+    getCommitSpy.mockImplementation(() => ({ data: mockSingleCommit }));
   });
 
   afterAll(() => {
@@ -69,5 +80,37 @@ describe('Unit Test: getCommits', () => {
       repo: mockRepo,
       pull_number: mockPrId,
     });
+  });
+
+  it('should return a single commit when "ref" matches with "heads/main"', async () => {
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
+    mockContext = new Context();
+
+    const mockCommitResult = [
+      {
+        message: 'message1',
+        sha: '123456',
+      },
+    ];
+
+    const result = await getCommits(octokit, mockContext);
+
+    expect(result).toEqual(mockCommitResult);
+  });
+
+  it('should return a single commit when "ref" matches with "heads/master"', async () => {
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
+    mockContext = new Context();
+
+    const mockCommitResult = [
+      {
+        message: 'message1',
+        sha: '123456',
+      },
+    ];
+
+    const result = await getCommits(octokit, mockContext);
+
+    expect(result).toEqual(mockCommitResult);
   });
 });

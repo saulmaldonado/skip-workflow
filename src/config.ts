@@ -8,4 +8,5 @@ export const config = {
     PULL_REQUEST: 'pull_request',
     COMMIT_MESSAGES: 'commit_messages',
   },
+  PUSH_EVENT_NAME: 'push',
 };
