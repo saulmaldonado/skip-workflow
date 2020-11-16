@@ -229,6 +229,62 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 /***/ }),
 
+/***/ 2738:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.convertToRegex = void 0;
+exports.convertToRegex = (phrase) => {
+    try {
+        const [, regex, tags] = phrase.split('/');
+        return new RegExp(regex, tags);
+    }
+    catch (error) {
+        throw new Error(`Error converting "${phrase}" to RegExp`);
+    }
+};
+
+
+/***/ }),
+
+/***/ 6410:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isMatch = void 0;
+const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+exports.isMatch = (phrase, string) => {
+    if (phrase instanceof RegExp) {
+        /* RegExp copy prevents g flag from storing lastIndex between test */
+        const regexCopy = new RegExp(phrase);
+        return regexCopy.test(string);
+    }
+    const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
+    return lowercaseString.includes(phrase);
+};
+
+
+/***/ }),
+
+/***/ 9282:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isRegex = void 0;
+exports.isRegex = (string) => {
+    const regexRegex = /^\/.+\/[gmisut]*$/;
+    return regexRegex.test(string);
+};
+
+
+/***/ }),
+
 /***/ 4411:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -281,7 +337,7 @@ exports.parseSearchInput = (searchInput) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchAllCommitMessages = void 0;
 const console_1 = __webpack_require__(7082);
-const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+const isMatch_1 = __webpack_require__(6410);
 /**
  * Searches all commits for message with included matching phrase. Case and whitespace insensitive.
  * @param {{message: string, sha: string}} commits Array of commits
@@ -291,11 +347,9 @@ const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
  * object with result and commit that does not match the phrase
  */
 exports.searchAllCommitMessages = (commits, phrase) => {
-    const lowercasePhrase = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
     const commit = commits.find(({ message, sha }) => {
-        const lowercaseMessage = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(message).toLowerCase();
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-        return !lowercaseMessage.includes(lowercasePhrase);
+        return !isMatch_1.isMatch(phrase, message);
     });
     const result = !commit;
     if (result) {
@@ -315,6 +369,7 @@ exports.searchAllCommitMessages = (commits, phrase) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchPullRequestMessage = void 0;
 const core_1 = __webpack_require__(2186);
+const isMatch_1 = __webpack_require__(6410);
 /**
  *
  * @param {PullsGetResponseData} pullRequest Pull request object
@@ -328,11 +383,11 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
     let message = '';
     if (textToSearch === 'title' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in title`);
-        message += !title.includes(phrase) ? title : '';
+        message += !isMatch_1.isMatch(phrase, title) ? title : '';
     }
     if (textToSearch === 'body' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in body`);
-        message += !body.includes(phrase) ? ' & body' : '';
+        message += !isMatch_1.isMatch(phrase, body) ? ' & body' : '';
     }
     message = message.replace(/^( & )/i, '');
     const result = !message;
@@ -351,9 +406,11 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parsePrMessageOptionInput = void 0;
+exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
+const convertToRegex_1 = __webpack_require__(2738);
+const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.parsePrMessageOptionInput = (inputId) => {
     const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
@@ -366,6 +423,14 @@ exports.parsePrMessageOptionInput = (inputId) => {
         throw new Error(`${input} is not a valid input for ${inputId}`);
     }
     return lowerCaseInput;
+};
+exports.parsePhraseInput = (inputId) => {
+    const phrase = core_1.getInput(inputId, { required: true });
+    core_1.debug(`${inputId} input: ${phrase}`);
+    if (isRegex_1.isRegex(phrase)) {
+        return convertToRegex_1.convertToRegex(phrase);
+    }
+    return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
 
 
@@ -419,12 +484,11 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             required: true,
         });
         core_1.debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
-        const phrase = core_1.getInput(PHRASE_INPUT_ID, { required: true });
-        core_1.debug(`${PHRASE_INPUT_ID} input: ${phrase}`);
         const searchInput = core_1.getInput(SEARCH_INPUT_ID, { required: true });
         core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
+        const phrase = validateInput_1.parsePhraseInput(PHRASE_INPUT_ID);
         const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};

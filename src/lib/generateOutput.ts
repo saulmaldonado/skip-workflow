@@ -4,7 +4,7 @@ type CreateOutputParameters = {
   commitMessagesSearchResult?: boolean;
   titleSearchResult?: boolean;
   message?: string;
-  phrase: string;
+  phrase: string | RegExp;
   commit?: Commit;
 };
 

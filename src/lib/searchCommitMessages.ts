@@ -1,6 +1,6 @@
 import { debug } from 'console';
 import { Commit } from './getCommits';
-import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
+import { isMatch } from './helpers/isMatch';
 
 export type SearchCommitMessagesResult =
   | { result: true; commit: undefined }
@@ -8,7 +8,7 @@ export type SearchCommitMessagesResult =
 
 type SearchCommitMessages = (
   commits: Commit[],
-  phrase: string,
+  phrase: string | RegExp,
 ) => SearchCommitMessagesResult;
 
 /**
@@ -23,14 +23,10 @@ export const searchAllCommitMessages: SearchCommitMessages = (
   commits,
   phrase,
 ) => {
-  const lowercasePhrase = removeExtraneousWhiteSpace(phrase).toLowerCase();
-
   const commit = commits.find(({ message, sha }) => {
-    const lowercaseMessage = removeExtraneousWhiteSpace(message).toLowerCase();
-
     debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
 
-    return !lowercaseMessage.includes(lowercasePhrase);
+    return !isMatch(phrase, message);
   });
 
   const result = !commit;

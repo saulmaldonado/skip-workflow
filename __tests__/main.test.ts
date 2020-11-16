@@ -210,4 +210,109 @@ describe('Integration Test: main', () => {
       );
     });
   });
+
+  describe('Search for regex', () => {
+    beforeAll(() => {
+      process.env.INPUT_SEARCH = JSON.stringify(['commit_messages']);
+    });
+
+    const mockPhraseRegex = '/^\\[skip-workflow\\]/gi';
+    const mockCommits = [
+      {
+        commit: {
+          message: '[skip-workflow]: add docs',
+          url: 'https://example.com',
+        },
+        sha: '123456',
+      },
+      {
+        commit: {
+          message: '[skip-workflow]: edit docs',
+          url: 'https://example.com',
+        },
+        sha: '456789',
+      },
+    ];
+
+    it('should set output to true if commit messages match with regex', async () => {
+      listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+      process.env.INPUT_PHRASE = mockPhraseRegex;
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        true,
+      );
+    });
+
+    it('should set output to true if commit messages match with regex', async () => {
+      const mockNonMatchingCommits = [
+        {
+          commit: {
+            message: 'docs: add docs',
+            url: 'https://example.com',
+          },
+          sha: '123456',
+        },
+        {
+          commit: {
+            message: 'docs: edit docs',
+            url: 'https://example.com',
+          },
+          sha: '456789',
+        },
+      ];
+      listCommitsSpy.mockImplementationOnce(() => ({
+        data: mockNonMatchingCommits,
+      }));
+      process.env.INPUT_PHRASE = mockPhraseRegex;
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        null,
+      );
+    });
+
+    it('should set output to true if commit messages match with regex', async () => {
+      const mockNonMatchingCommits = [
+        {
+          commit: {
+            message: 'docs: add docs [skip-workflow]',
+            url: 'https://example.com',
+          },
+          sha: '123456',
+        },
+        {
+          commit: {
+            message: 'docs: edit docs [skip-workflow]',
+            url: 'https://example.com',
+          },
+          sha: '456789',
+        },
+      ];
+      listCommitsSpy.mockImplementationOnce(() => ({
+        data: mockNonMatchingCommits,
+      }));
+      process.env.INPUT_PHRASE = mockPhraseRegex;
+
+      await run();
+
+      expect(issueCommandSpy).toBeCalledWith(
+        'set-output',
+        {
+          name: config.MATCH_FOUND_OUTPUT_ID,
+        },
+        null,
+      );
+    });
+  });
 });

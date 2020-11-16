@@ -1,9 +1,10 @@
 import { debug } from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
+import { isMatch } from './helpers/isMatch';
 
 type SearchPullRequestMessage = (
   pullRequest: PullsGetResponseData,
-  phrase: string,
+  phrase: string | RegExp,
   options?: SearchPullRequestMessageOptions,
 ) => SearchPullRequestMessageResult;
 
@@ -31,12 +32,12 @@ export const searchPullRequestMessage: SearchPullRequestMessage = (
   let message = '';
   if (textToSearch === 'title' || textToSearch === 'title & body') {
     debug(`Searching for ${phrase} in title`);
-    message += !title.includes(phrase) ? title : '';
+    message += !isMatch(phrase, title) ? title : '';
   }
 
   if (textToSearch === 'body' || textToSearch === 'title & body') {
     debug(`Searching for ${phrase} in body`);
-    message += !body.includes(phrase) ? ' & body' : '';
+    message += !isMatch(phrase, body) ? ' & body' : '';
   }
 
   message = message.replace(/^( & )/i, '');
