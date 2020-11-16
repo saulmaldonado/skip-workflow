@@ -229,6 +229,26 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 /***/ }),
 
+/***/ 2738:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.convertToRegex = void 0;
+exports.convertToRegex = (phrase) => {
+    try {
+        const [, regex, tags] = phrase.split('/');
+        return new RegExp(regex, tags);
+    }
+    catch (error) {
+        throw new Error(`Error converting "${phrase}" to RegExp`);
+    }
+};
+
+
+/***/ }),
+
 /***/ 6410:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -236,10 +256,9 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isMatch = void 0;
-const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.isMatch = (phrase, string) => {
-    if (isRegex_1.isRegex(phrase)) {
+    if (phrase instanceof RegExp) {
         return phrase.test(string);
     }
     const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
@@ -388,6 +407,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
+const convertToRegex_1 = __webpack_require__(2738);
 const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.parsePrMessageOptionInput = (inputId) => {
@@ -406,13 +426,7 @@ exports.parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
     if (isRegex_1.isRegex(phrase)) {
-        try {
-            const phraseRegex = RegExp(phrase);
-            return phraseRegex;
-        }
-        catch (_a) {
-            throw new Error(`Invalid Regex: ${phrase}`);
-        }
+        return convertToRegex_1.convertToRegex(phrase);
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };

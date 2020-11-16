@@ -1,7 +1,7 @@
-type IsRegex = (string: string | RegExp) => string is RegExp;
+type IsRegex = (string: string) => boolean;
 
-export const isRegex: IsRegex = (string): string is RegExp => {
+export const isRegex: IsRegex = (string) => {
   const regexRegex = /^\/.+\/[gmisut]*$/;
 
-  return regexRegex.test(string as string);
+  return regexRegex.test(string);
 };

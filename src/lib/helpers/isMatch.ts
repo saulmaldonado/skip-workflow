@@ -1,10 +1,9 @@
-import { isRegex } from './isRegex';
 import { removeExtraneousWhiteSpace } from './removeExtraneousWhiteSpace';
 
 type IsMatch = (phrase: string | RegExp, string: string) => boolean;
 
 export const isMatch: IsMatch = (phrase, string) => {
-  if (isRegex(phrase)) {
+  if (phrase instanceof RegExp) {
     return phrase.test(string);
   }
 

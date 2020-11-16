@@ -1,5 +1,6 @@
 import { debug, getInput } from '@actions/core';
 import { config } from '../config';
+import { convertToRegex } from './helpers/convertToRegex';
 import { isRegex } from './helpers/isRegex';
 import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
 
@@ -40,12 +41,7 @@ export const parsePhraseInput: ValidateInputRegex<'PHRASE_INPUT_ID'> = (
   debug(`${inputId} input: ${phrase}`);
 
   if (isRegex(phrase)) {
-    try {
-      const phraseRegex = RegExp(phrase);
-      return phraseRegex;
-    } catch {
-      throw new Error(`Invalid Regex: ${phrase}`);
-    }
+    return convertToRegex(phrase);
   }
 
   return removeExtraneousWhiteSpace(phrase).toLowerCase();
