@@ -24,7 +24,7 @@ inputs:
     required: false
     description: 'explicitly set pull request ID'
 outputs:
-  skip-workflow:
+  skip:
     description: 'Boolean output indicating if the workflow can be skipped'
 runs:
   using: 'node12'

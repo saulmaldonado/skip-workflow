@@ -12,17 +12,90 @@
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/saulmaldonado/skip-workflow">
 </p>
 
-# Create a JavaScript Action using TypeScript
+# Skip Workflow
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+### Github action for skipping workflows upon matching with commit message(s) or pull request
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.
+Works by matching string or RegExp with any combination of **all** commit messages, pull request title, and/or pull request body. Output can be used used to conditionally run the following jobs or steps
 
-If you are new, there's also a simpler introduction. See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+## Inputs
 
-## Create an action from this template
+### `phrase`
 
-Click the `Use this Template` and provide the new repo details for your action
+**Required**: String phrase or RegExp to search for.
+
+```yaml
+with:
+  phrase: '[skip-workflow]' # searches for phrase anywhere in text
+  # or
+  phrase: '/^\\[skip-workflow\\]/i'
+  # if any symbols are escaped or metacharacters are used, backslashes must be escaped to work
+```
+
+### `search`
+
+**Required**: Text to search in for match. `JSON array`.
+
+**default**: `'["commit_messages"]'`
+
+```yaml
+with:
+  search: '["commit_messages", "pull_request"]' # any combination
+```
+
+### `pr-message`
+
+**Required**: Pull request text to search in. `search` input must include `"pull_request"`.
+
+**default**: `'title'`
+
+```yaml
+with:
+  search: '["pull_request"]' # pull_request must be included in search input array
+
+  pr-message: 'title'
+  # or
+  pr-message: 'body'
+  # or
+  pr-message: 'title & body'
+```
+
+### `github-token`
+
+**Required**: Github workflow context token needed to search commits and pull request.
+
+```yaml
+with:
+  github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## Output
+
+### `skip-job`
+
+Result of search.
+
+Can be:
+
+- `true` : Match passed, workflow can be skipped
+- `null` : Match not passed, workflow must continue
+
+```yaml
+outputs:
+  skip: ${{ steps.skip-workflow.outputs.skip }}
+
+  steps:
+    - uses: actions/checkout@v2
+
+      id: skip-workflow
+      uses: saulmaldonado/skip-workflow@v1
+      with:
+        phrase: '[skip-workflow]'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: test
+      if: ${{ !steps.skip-workflow.outputs.skip }} # conditionally run following steps
+```
 
 ## Code in Main
 

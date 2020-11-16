@@ -10,7 +10,7 @@ jobs:
   skip-workflow-test-job:
     runs-on: ubuntu-latest
     outputs:
-      skip-job: ${{ steps.skip-workflow.outputs.match-found }}
+      skip: ${{ steps.skip-workflow.outputs.skip }}
 
     steps:
       - uses: actions/checkout@v2
@@ -25,11 +25,20 @@ jobs:
           phrase: '[skip-workflow]'
           search: '["commit_messages", "pull_request"]'
           pr-id: 13
+      - name: test-step-should-not-run
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/saulmaldonado/skip-workflow/check-runs \
+            -d '{"name":"skip-workflow-e2e-test","head_sha": "${{ github.event.inputs.sha }}", "conclusion": "failure"}'
 
   test-action:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow-test-job.outputs.skip-job }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.skip }}
     runs-on: ubuntu-latest
     name: test-job-1
     steps:
@@ -48,7 +57,7 @@ jobs:
   test-action-2:
     needs: skip-workflow-test-job
 
-    if: ${{ !needs.skip-workflow-test-job.outputs.skip-job }}
+    if: ${{ !needs.skip-workflow-test-job.outputs.skip }}
     runs-on: ubuntu-latest
     name: test-job-2
     steps:
@@ -66,7 +75,7 @@ jobs:
   pass-check:
     needs: skip-workflow-test-job
 
-    if: ${{ needs.skip-workflow-test-job.outputs.skip-job }}
+    if: ${{ needs.skip-workflow-test-job.outputs.skip }}
 
     runs-on: ubuntu-latest
     name: pass-check
