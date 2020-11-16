@@ -1,5 +1,5 @@
-name: skip-workflow
-description: 'Github action for skipping workflows upon matching commit message, pull request message or tag'
+name: Skip Workflow
+description: 'Github action for skipping workflows upon matching or finding phrase in commit message(s) or pull request'
 branding:
   icon: arrow-right-circle
   color: yellow
