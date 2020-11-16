@@ -4,6 +4,6 @@ import { Context } from '@actions/github/lib/context';
 export type SearchIn<T, K = Object> = (
   octokit: ReturnType<typeof getOctokit>,
   context: Context,
-  phrase: string,
+  phrase: string | RegExp,
   options?: K,
 ) => Promise<T>;

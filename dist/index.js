@@ -229,6 +229,41 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 /***/ }),
 
+/***/ 6410:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isMatch = void 0;
+const isRegex_1 = __webpack_require__(9282);
+const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+exports.isMatch = (phrase, string) => {
+    if (isRegex_1.isRegex(phrase)) {
+        return phrase.test(string);
+    }
+    const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
+    return lowercaseString.includes(phrase);
+};
+
+
+/***/ }),
+
+/***/ 9282:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isRegex = void 0;
+exports.isRegex = (string) => {
+    const regexRegex = /^\/.+\/[gmisut]*$/;
+    return regexRegex.test(string);
+};
+
+
+/***/ }),
+
 /***/ 4411:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -281,7 +316,7 @@ exports.parseSearchInput = (searchInput) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchAllCommitMessages = void 0;
 const console_1 = __webpack_require__(7082);
-const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+const isMatch_1 = __webpack_require__(6410);
 /**
  * Searches all commits for message with included matching phrase. Case and whitespace insensitive.
  * @param {{message: string, sha: string}} commits Array of commits
@@ -292,9 +327,8 @@ const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
  */
 exports.searchAllCommitMessages = (commits, phrase) => {
     const commit = commits.find(({ message, sha }) => {
-        const lowercaseMessage = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(message).toLowerCase();
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-        return !lowercaseMessage.includes(phrase);
+        return !isMatch_1.isMatch(phrase, message);
     });
     const result = !commit;
     if (result) {
@@ -314,6 +348,7 @@ exports.searchAllCommitMessages = (commits, phrase) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.searchPullRequestMessage = void 0;
 const core_1 = __webpack_require__(2186);
+const isMatch_1 = __webpack_require__(6410);
 /**
  *
  * @param {PullsGetResponseData} pullRequest Pull request object
@@ -327,11 +362,11 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
     let message = '';
     if (textToSearch === 'title' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in title`);
-        message += !title.includes(phrase) ? title : '';
+        message += !isMatch_1.isMatch(phrase, title) ? title : '';
     }
     if (textToSearch === 'body' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in body`);
-        message += !body.includes(phrase) ? ' & body' : '';
+        message += !isMatch_1.isMatch(phrase, body) ? ' & body' : '';
     }
     message = message.replace(/^( & )/i, '');
     const result = !message;
@@ -353,6 +388,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
+const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.parsePrMessageOptionInput = (inputId) => {
     const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
@@ -369,16 +405,14 @@ exports.parsePrMessageOptionInput = (inputId) => {
 exports.parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
-    const regexRegex = /^\/.+\/[gmisut]*$/;
-    const isRegex = regexRegex.test(phrase);
-    if (isRegex) {
+    if (isRegex_1.isRegex(phrase)) {
         try {
-            RegExp(phrase);
+            const phraseRegex = RegExp(phrase);
+            return phraseRegex;
         }
         catch (_a) {
             throw new Error(`Invalid Regex: ${phrase}`);
         }
-        return phrase;
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };

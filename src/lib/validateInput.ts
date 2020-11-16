@@ -1,10 +1,15 @@
 import { debug, getInput } from '@actions/core';
 import { config } from '../config';
+import { isRegex } from './helpers/isRegex';
 import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace';
 
 type ValidateInput<T extends keyof typeof config> = (
   inputId: typeof config[T],
 ) => string;
+
+type ValidateInputRegex<T extends keyof typeof config> = (
+  inputId: typeof config[T],
+) => string | RegExp;
 
 export const parsePrMessageOptionInput: ValidateInput<'PR_MESSAGE'> = (
   inputId,
@@ -28,21 +33,19 @@ export const parsePrMessageOptionInput: ValidateInput<'PR_MESSAGE'> = (
   return lowerCaseInput;
 };
 
-export const parsePhraseInput: ValidateInput<'PHRASE_INPUT_ID'> = (inputId) => {
+export const parsePhraseInput: ValidateInputRegex<'PHRASE_INPUT_ID'> = (
+  inputId,
+) => {
   const phrase = getInput(inputId, { required: true });
   debug(`${inputId} input: ${phrase}`);
 
-  const regexRegex = /^\/.+\/[gmisut]*$/;
-
-  const isRegex = regexRegex.test(phrase);
-
-  if (isRegex) {
+  if (isRegex(phrase)) {
     try {
-      RegExp(phrase);
+      const phraseRegex = RegExp(phrase);
+      return phraseRegex;
     } catch {
       throw new Error(`Invalid Regex: ${phrase}`);
     }
-    return phrase;
   }
 
   return removeExtraneousWhiteSpace(phrase).toLowerCase();
