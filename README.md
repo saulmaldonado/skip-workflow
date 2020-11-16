@@ -7,7 +7,7 @@
   <img alt="license: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
 </a>
   <a href="http://makeapullrequest.com">
-  <img alt="license: MIT" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" />
+  <img alt="license: MIT" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
 </a>
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/saulmaldonado/skip-workflow">
 </p>
