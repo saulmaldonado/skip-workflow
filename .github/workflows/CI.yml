@@ -39,4 +39,5 @@ jobs:
             https://api.github.com/repos/saulmaldonado/skip-workflow/actions/workflows/3497271/dispatches \
             -d '{"ref":"main", "inputs": {"sha": "${{ github.event.pull_request.head.sha || github.sha }}"}}'
 
-      - uses: codecov/codecov-action@v1
+      - name: codecov
+        run: bash <(curl -s https://codecov.io/bash)
