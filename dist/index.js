@@ -259,7 +259,9 @@ exports.isMatch = void 0;
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.isMatch = (phrase, string) => {
     if (phrase instanceof RegExp) {
-        return phrase.test(string);
+        /* RegExp copy prevents g flag from storing lastIndex between test */
+        const regexCopy = new RegExp(phrase);
+        return regexCopy.test(string);
     }
     const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
     return lowercaseString.includes(phrase);
