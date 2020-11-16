@@ -14,9 +14,278 @@
 
 # Skip Workflow
 
-### Github action for skipping workflows upon matching with commit message(s) or pull request
+## Github action for skipping workflows upon matching or finding phrase in commit message(s) or pull request
 
-Works by matching string or RegExp with any combination of **all** commit messages, pull request title, and/or pull request body. Output can be used used to conditionally run the following jobs or steps
+Works by finding phrase in or matching RegExp with commit message(s), pull request title, and/or pull request body. `skip` output value can then be used to conditionally run the following jobs or steps.
+
+[Github workflow token](https://docs.github.com/en/free-pro-team@latest/actions/reference/authentication-in-a-workflow#using-the-github_token-in-a-workflow) is needed to make authenticated requests for commit and pull requests.
+
+## Sample Scenarios
+
+## Skip rest of job if phrase is found in **_all_** commit messages of the incoming pull request
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    pull_request:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: 'skip-workflow'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+
+      - name: Test
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm test
+```
+
+---
+
+## Skip rest of job if RegExp matches with **_all_** commit messages of the incoming pull request
+
+<details>
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    pull_request:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '/^\\[skip-workflow\\]/i' # matches with commits starting with '[skip-workflow]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+
+      - name: Test
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm test
+```
+
+</details>
+
+---
+
+## Skip rest of job if phrase is found in **all** commit messages and the **title** of the incoming pull request
+
+<details>
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    pull_request:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-workflow]'
+          search: '["commit_messages", "pull_request"]' # search commits and pr title
+          pr-message: 'title'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+
+      - name: Test
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm test
+```
+
+</details>
+
+---
+
+## Skip rest of job if phrase is found in `HEAD` commit message on push to main/master branch
+
+<details>
+
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-workflow]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+
+      - name: Test
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm test
+```
+
+</details>
+
+---
+
+## Skip all other jobs if phrase is found matches in `HEAD` commit message on push to main/master branch
+
+<details>
+
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    branches:
+      - main
+jobs:
+  skip-workflow:
+    runs-on: ubuntu-latest
+
+    outputs:
+      skip: ${{ steps.skip-workflow.outputs.skip }}
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-workflow]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: skip-workflow # needs is required for reference and to prevent both jobs running at the same time
+
+    if: ${{ !needs.skip-workflow.outputs.skip }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+```
+
+</details>
+
+---
 
 ## Inputs
 
@@ -71,7 +340,7 @@ with:
 
 ## Output
 
-### `skip-job`
+### `skip`
 
 Result of search.
 
@@ -81,110 +350,16 @@ Can be:
 - `null` : Match not passed, workflow must continue
 
 ```yaml
-outputs:
-  skip: ${{ steps.skip-workflow.outputs.skip }}
+steps:
+  - uses: actions/checkout@v2
 
-  steps:
-    - uses: actions/checkout@v2
+  - name: skip-workflow
+    id: skip-workflow # id used for referencing step
+    uses: saulmaldonado/skip-workflow@v1
+    with:
+      phrase: '[skip-workflow]'
+      github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      id: skip-workflow
-      uses: saulmaldonado/skip-workflow@v1
-      with:
-        phrase: '[skip-workflow]'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: test
-      if: ${{ !steps.skip-workflow.outputs.skip }} # conditionally run following steps
+  - name: test
+    if: ${{ !steps.skip-workflow.outputs.skip }} # conditionally run following steps
 ```
-
-## Code in Main
-
-Install the dependencies
-
-```bash
-$ npm install
-```
-
-Build the typescript and package it for distribution
-
-```bash
-$ npm run build && npm run package
-```
-
-Run the tests :heavy_check_mark:
-
-```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
-```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder.
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket:
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
