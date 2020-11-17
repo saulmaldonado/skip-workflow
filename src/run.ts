@@ -46,7 +46,10 @@ const run: Run = async () => {
 
     const phrase = parsePhraseInput(PHRASE_INPUT_ID);
 
-    const prMessageOption = parsePrMessageOptionInput(PR_MESSAGE);
+    const prMessageOption = parsePrMessageOptionInput(
+      PR_MESSAGE,
+      searchOptions,
+    );
 
     const octokit = getOctokit(githubToken);
 

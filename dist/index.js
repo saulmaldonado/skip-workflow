@@ -407,17 +407,22 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
+/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable @typescript-eslint/comma-dangle */
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
 const convertToRegex_1 = __webpack_require__(2738);
 const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
-exports.parsePrMessageOptionInput = (inputId) => {
+exports.parsePrMessageOptionInput = (inputId, searchOptions) => {
     const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
     const input = core_1.getInput(inputId);
     if (!input)
         return config_1.config.PR_MESSAGE_OPTIONS.TITLE;
     core_1.debug(`${inputId} input: ${input}`);
+    if (searchOptions.has(config_1.config.SEARCH_OPTIONS.PULL_REQUEST)) {
+        console.warn(`Unnecessary ${config_1.config.PR_MESSAGE} input`);
+    }
     const lowerCaseInput = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(input).toLowerCase();
     if (!options.has(lowerCaseInput)) {
         throw new Error(`${input} is not a valid input for ${inputId}`);
@@ -489,7 +494,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
         const phrase = validateInput_1.parsePhraseInput(PHRASE_INPUT_ID);
-        const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE);
+        const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE, searchOptions);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};
         if (searchOptions.has(COMMIT_MESSAGES)) {
