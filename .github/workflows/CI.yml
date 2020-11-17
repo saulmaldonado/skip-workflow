@@ -39,5 +39,14 @@ jobs:
             https://api.github.com/repos/saulmaldonado/skip-workflow/actions/workflows/3497271/dispatches \
             -d '{"ref":"main", "inputs": {"sha": "${{ github.event.pull_request.head.sha || github.sha }}"}}'
 
+      - name: dispatch e2e test 2
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/saulmaldonado/skip-workflow/actions/workflows/3658421/dispatches \
+            -d '{"ref":"main", "inputs": {"sha": "${{ github.event.pull_request.head.sha || github.sha }}"}}'
+
       - name: codecov
         run: bash <(curl -s https://codecov.io/bash)

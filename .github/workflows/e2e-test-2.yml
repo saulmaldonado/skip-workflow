@@ -1,4 +1,4 @@
-name: skip-workflow-e2e-test
+name: skip-workflow-e2e-test-2
 
 on:
   workflow_dispatch:
