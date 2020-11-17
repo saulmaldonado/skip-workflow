@@ -70,6 +70,7 @@ export const generateOutput: GenerateOutput = ({
   commitMessagesSearchResult,
   titleSearchResult,
   commit,
+  message,
   phrase,
 }) => {
   if (commitMessagesSearchResult || titleSearchResult) {
@@ -88,6 +89,7 @@ export const generateOutput: GenerateOutput = ({
     commitMessagesSearchResult,
     titleSearchResult,
     commit,
+    message,
     phrase,
   });
 

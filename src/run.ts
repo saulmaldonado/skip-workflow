@@ -61,13 +61,6 @@ const run: Run = async () => {
         commit,
       } = await searchInCommits(octokit, context, phrase);
 
-      debug(
-        `Commit message search result: ${JSON.stringify({
-          commitMessagesSearchResult,
-          commit,
-        })}`,
-      );
-
       searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
       searchResults.commit = commit;
     }
@@ -80,13 +73,6 @@ const run: Run = async () => {
         {
           textToSearch: prMessageOption,
         },
-      );
-
-      debug(
-        `Pull request search result: ${JSON.stringify({
-          titleSearchResult,
-          message,
-        })}`,
       );
 
       searchResults.titleSearchResult = titleSearchResult;

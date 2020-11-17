@@ -68,7 +68,7 @@ exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResu
  *
  * @returns {{log: string, result: boolean}}
  */
-exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, phrase, }) => {
+exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     if (commitMessagesSearchResult || titleSearchResult) {
         const log = exports.createOutputFoundLog({
             commitMessagesSearchResult,
@@ -82,6 +82,7 @@ exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commi
         commitMessagesSearchResult,
         titleSearchResult,
         commit,
+        message,
         phrase,
     });
     const result = null;
@@ -258,6 +259,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isMatch = void 0;
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.isMatch = (phrase, string) => {
+    console.log(`input instance of RegExp ${phrase instanceof RegExp}`);
     if (phrase instanceof RegExp) {
         /* RegExp copy prevents g flag from storing lastIndex between test */
         const regexCopy = new RegExp(phrase);
@@ -500,10 +502,6 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchResults = {};
         if (searchOptions.has(COMMIT_MESSAGES)) {
             const { result: commitMessagesSearchResult, commit, } = yield searchInCommits_1.searchInCommits(octokit, context, phrase);
-            core_1.debug(`Commit message search result: ${JSON.stringify({
-                commitMessagesSearchResult,
-                commit,
-            })}`);
             searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
             searchResults.commit = commit;
         }
@@ -511,10 +509,6 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             const { result: titleSearchResult, message } = yield searchInPullRequest_1.searchInPullRequest(octokit, context, phrase, {
                 textToSearch: prMessageOption,
             });
-            core_1.debug(`Pull request search result: ${JSON.stringify({
-                titleSearchResult,
-                message,
-            })}`);
             searchResults.titleSearchResult = titleSearchResult;
             searchResults.message = message;
         }
