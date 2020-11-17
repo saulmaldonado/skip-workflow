@@ -16,7 +16,9 @@
 
 ## Github action for skipping workflows upon matching or finding phrase in commit message(s) or pull request
 
-Works by finding phrase in or matching RegExp with commit message(s), pull request title, and/or pull request body. `skip` output value can then be used to conditionally run the following jobs or steps.
+Works by searching for phrase in or matching RegExp with commit message(s), pull request title, and/or pull request body. `skip` output value can then be used to conditionally skip the following jobs or steps.
+
+Github Actions does not natively support skipping or canceling workflow based on phrases in commit message like other CI tools do. This action was made to replicate this feature and let repositories save on CI minutes for small non-impacting changes to code bases.
 
 [Github workflow token](https://docs.github.com/en/free-pro-team@latest/actions/reference/authentication-in-a-workflow#using-the-github_token-in-a-workflow) is needed to make authenticated requests for commit and pull requests.
 
@@ -121,7 +123,7 @@ jobs:
 
 ---
 
-## Skip rest of job if phrase is found in **all** commit messages and the **title** of the incoming pull request
+## Skip rest of job if phrase is found in **_all_** commit messages and the **_title_** of the incoming pull request
 
 <details>
   <summary>View example workflow </summary>
@@ -303,7 +305,7 @@ with:
 
 ### `search`
 
-**Required**: Text to search in for match. `JSON array`.
+Text to search in for match. `JSON array`.
 
 **default**: `'["commit_messages"]'`
 
@@ -314,13 +316,13 @@ with:
 
 ### `pr-message`
 
-**Required**: Pull request text to search in. `search` input must include `"pull_request"`.
+Pull request text to search in. To be used along side `search` option input `'["pull_request"]'`.
 
 **default**: `'title'`
 
 ```yaml
 with:
-  search: '["pull_request"]' # pull_request must be included in search input array
+  search: '["pull_request"]' # pull_request must be included in search option input array
 
   pr-message: 'title'
   # or
