@@ -7,7 +7,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
   const mockGithubToken = 'githubToken';
   const mockRepo = 'skip-workflow';
   const mockOwner = 'github-action';
-  const mockPhrase = 'docs';
+  const mockPhrase = '/^\\[skip-workflow\\]/gi';
   const mockEventName = 'push';
 
   const mockEnv = {
@@ -46,11 +46,14 @@ describe('Integration test: main (on push to master/main branch)', () => {
     process.env.GITHUB_EVENT_NAME = mockEventName;
     process.env.INPUT_SEARCH = JSON.stringify([
       'commit_messages',
-      'pull_request',
+      'pull_request', // push should skip pull_request option
     ]);
 
     const mockCommit = {
-      commit: { message: 'docs: add docs', url: 'https://example.com' },
+      commit: {
+        message: '[skip-workflow]: example commit for e2e test',
+        url: 'https://example.com',
+      },
       sha: '123456',
     };
 

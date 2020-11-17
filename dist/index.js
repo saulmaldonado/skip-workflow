@@ -420,8 +420,8 @@ exports.parsePrMessageOptionInput = (inputId, searchOptions) => {
     if (!input)
         return config_1.config.PR_MESSAGE_OPTIONS.TITLE;
     core_1.debug(`${inputId} input: ${input}`);
-    if (searchOptions.has(config_1.config.SEARCH_OPTIONS.PULL_REQUEST)) {
-        console.warn(`Unnecessary ${config_1.config.PR_MESSAGE} input`);
+    if (!searchOptions.has(config_1.config.SEARCH_OPTIONS.PULL_REQUEST)) {
+        console.warn(`⚠ Warning: Unnecessary ${config_1.config.PR_MESSAGE} input`);
     }
     const lowerCaseInput = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(input).toLowerCase();
     if (!options.has(lowerCaseInput)) {
@@ -433,6 +433,7 @@ exports.parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
     if (isRegex_1.isRegex(phrase)) {
+        core_1.debug(`"${phrase}" detected as RegExp`);
         return convertToRegex_1.convertToRegex(phrase);
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
@@ -499,6 +500,10 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchResults = {};
         if (searchOptions.has(COMMIT_MESSAGES)) {
             const { result: commitMessagesSearchResult, commit, } = yield searchInCommits_1.searchInCommits(octokit, context, phrase);
+            core_1.debug(`Commit message search result: ${JSON.stringify({
+                commitMessagesSearchResult,
+                commit,
+            })}`);
             searchResults.commitMessagesSearchResult = commitMessagesSearchResult;
             searchResults.commit = commit;
         }
@@ -506,6 +511,10 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             const { result: titleSearchResult, message } = yield searchInPullRequest_1.searchInPullRequest(octokit, context, phrase, {
                 textToSearch: prMessageOption,
             });
+            core_1.debug(`Pull request search result: ${JSON.stringify({
+                titleSearchResult,
+                message,
+            })}`);
             searchResults.titleSearchResult = titleSearchResult;
             searchResults.message = message;
         }

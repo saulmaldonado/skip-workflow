@@ -11,7 +11,7 @@ type ValidateInput<
   K = Record<string, string>
 > = (inputId: typeof config[T], options?: K) => string;
 
-type ValidateInputRegex<T extends keyof typeof config> = (
+type ValidateInputPhrase<T extends keyof typeof config> = (
   inputId: typeof config[T],
 ) => string | RegExp;
 
@@ -29,8 +29,8 @@ export const parsePrMessageOptionInput: ValidateInput<
 
   debug(`${inputId} input: ${input}`);
 
-  if (searchOptions!.has(config.SEARCH_OPTIONS.PULL_REQUEST)) {
-    console.warn(`Unnecessary ${config.PR_MESSAGE} input`);
+  if (!searchOptions!.has(config.SEARCH_OPTIONS.PULL_REQUEST)) {
+    console.warn(`⚠ Warning: Unnecessary ${config.PR_MESSAGE} input`);
   }
 
   const lowerCaseInput = removeExtraneousWhiteSpace(input).toLowerCase();
@@ -42,13 +42,14 @@ export const parsePrMessageOptionInput: ValidateInput<
   return lowerCaseInput;
 };
 
-export const parsePhraseInput: ValidateInputRegex<'PHRASE_INPUT_ID'> = (
+export const parsePhraseInput: ValidateInputPhrase<'PHRASE_INPUT_ID'> = (
   inputId,
 ) => {
   const phrase = getInput(inputId, { required: true });
   debug(`${inputId} input: ${phrase}`);
 
   if (isRegex(phrase)) {
+    debug(`"${phrase}" detected as RegExp`);
     return convertToRegex(phrase);
   }
 
