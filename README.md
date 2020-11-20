@@ -7,7 +7,10 @@
   <img alt="license: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
 </a>
   <a href="http://makeapullrequest.com">
-  <img alt="license: MIT" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
+  <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
+</a>
+  <a href="https://GitHub.com/saulmaldonado/skip-workflow/releases/">
+  <img alt="release" src="https://img.shields.io/github/release/saulmaldonado/skip-workflow.svg" />
 </a>
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/saulmaldonado/skip-workflow">
 </p>
@@ -38,7 +41,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -88,7 +91,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -97,7 +100,7 @@ jobs:
         id: skip-workflow # id used for referencing step
         uses: saulmaldonado/skip-workflow@v1
         with:
-          phrase: '/^\\[skip-workflow\\]/i' # matches with commits starting with '[skip-workflow]'
+          phrase: /^\[skip-workflow\]/i # matches with commits starting with '[skip-workflow]'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js ${{ matrix.node-version }}
@@ -140,7 +143,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -195,7 +198,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -251,7 +254,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -299,7 +302,7 @@ jobs:
 with:
   phrase: '[skip-workflow]' # searches for phrase anywhere in text
   # or
-  phrase: '/^\\[skip-workflow\\]/i'
+  phrase: '/^\[skip-workflow\]/i'
   # if any symbols are escaped or metacharacters are used, backslashes must be escaped to work
 ```
 
