@@ -7,13 +7,11 @@ describe('Integration test: main (on push to master/main branch)', () => {
   const mockGithubToken = 'githubToken';
   const mockRepo = 'skip-workflow';
   const mockOwner = 'github-action';
-  const mockPhrase = 'docs';
   const mockEventName = 'push';
 
   const mockEnv = {
     GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
     'INPUT_GITHUB-TOKEN': mockGithubToken,
-    INPUT_PHRASE: mockPhrase,
   };
 
   const oldEnv = { ...process.env };
@@ -43,14 +41,49 @@ describe('Integration test: main (on push to master/main branch)', () => {
   });
 
   it('should return when single commit matches with phrase', async () => {
+    const mockPhrase = '[skip-workflow]';
+    process.env.INPUT_PHRASE = mockPhrase;
     process.env.GITHUB_EVENT_NAME = mockEventName;
     process.env.INPUT_SEARCH = JSON.stringify([
       'commit_messages',
-      'pull_request',
+      'pull_request', // push should skip pull_request option
     ]);
 
     const mockCommit = {
-      commit: { message: 'docs: add docs', url: 'https://example.com' },
+      commit: {
+        message: '[skip-workflow]: example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '123456',
+    };
+
+    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommit }));
+
+    await run();
+
+    expect(issueCommandSpy).toBeCalledWith(
+      'set-output',
+      {
+        name: config.MATCH_FOUND_OUTPUT_ID,
+      },
+      true,
+    );
+  });
+
+  it('should return when single commit matches with RegExp', async () => {
+    const mockRegex = '/^\\[skip-workflow\\]/gi';
+    process.env.INPUT_PHRASE = mockRegex;
+    process.env.GITHUB_EVENT_NAME = mockEventName;
+    process.env.INPUT_SEARCH = JSON.stringify([
+      'commit_messages',
+      'pull_request', // push should skip pull_request option
+    ]);
+
+    const mockCommit = {
+      commit: {
+        message: '[skip-workflow]: example commit for e2e test',
+        url: 'https://example.com',
+      },
       sha: '123456',
     };
 

@@ -68,12 +68,13 @@ exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResu
  *
  * @returns {{log: string, result: boolean}}
  */
-exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, phrase, }) => {
+exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     if (commitMessagesSearchResult || titleSearchResult) {
         const log = exports.createOutputFoundLog({
             commitMessagesSearchResult,
             titleSearchResult,
             phrase,
+            message,
         });
         const result = true;
         return { log, result };
@@ -82,6 +83,7 @@ exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commi
         commitMessagesSearchResult,
         titleSearchResult,
         commit,
+        message,
         phrase,
     });
     const result = null;
@@ -259,8 +261,11 @@ exports.isMatch = void 0;
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 exports.isMatch = (phrase, string) => {
     if (phrase instanceof RegExp) {
+        console.log(`${phrase} instance of RegExp ${phrase instanceof RegExp}`);
         /* RegExp copy prevents g flag from storing lastIndex between test */
         const regexCopy = new RegExp(phrase);
+        console.log(regexCopy);
+        console.log(string);
         return regexCopy.test(string);
     }
     const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
@@ -349,6 +354,7 @@ const isMatch_1 = __webpack_require__(6410);
 exports.searchAllCommitMessages = (commits, phrase) => {
     const commit = commits.find(({ message, sha }) => {
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
+        console.log(phrase);
         return !isMatch_1.isMatch(phrase, message);
     });
     const result = !commit;
@@ -420,8 +426,8 @@ exports.parsePrMessageOptionInput = (inputId, searchOptions) => {
     if (!input)
         return config_1.config.PR_MESSAGE_OPTIONS.TITLE;
     core_1.debug(`${inputId} input: ${input}`);
-    if (searchOptions.has(config_1.config.SEARCH_OPTIONS.PULL_REQUEST)) {
-        console.warn(`Unnecessary ${config_1.config.PR_MESSAGE} input`);
+    if (!searchOptions.has(config_1.config.SEARCH_OPTIONS.PULL_REQUEST)) {
+        console.warn(`⚠ Warning: Unnecessary ${config_1.config.PR_MESSAGE} input`);
     }
     const lowerCaseInput = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(input).toLowerCase();
     if (!options.has(lowerCaseInput)) {
@@ -433,6 +439,7 @@ exports.parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
     if (isRegex_1.isRegex(phrase)) {
+        core_1.debug(`"${phrase}" detected as RegExp`);
         return convertToRegex_1.convertToRegex(phrase);
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();

@@ -22,7 +22,7 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          phrase: '/^\\[skip-workflow\\]/gi'
+          phrase: /^\[skip-workflow\]/i
           search: '["commit_messages", "pull_request"]'
           pr-id: 13
       - name: test-step-should-not-run
