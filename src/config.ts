@@ -4,6 +4,7 @@ export const config = {
   MATCH_FOUND_OUTPUT_ID: 'skip',
   SEARCH_INPUT_ID: 'search',
   PR_ID_INPUT_ID: 'pr-id',
+  FAIL_FAST_INPUT_ID: 'fail-fast',
   SEARCH_OPTIONS: {
     PULL_REQUEST: 'pull_request',
     COMMIT_MESSAGES: 'commit_messages',

@@ -15,6 +15,10 @@ type ValidateInputPhrase<T extends keyof typeof config> = (
   inputId: typeof config[T],
 ) => string | RegExp;
 
+type ValidateFailFast<T extends keyof typeof config> = (
+  inputId: typeof config[T],
+) => boolean;
+
 export const parsePrMessageOptionInput: ValidateInput<
   'PR_MESSAGE',
   Set<string>
@@ -54,4 +58,13 @@ export const parsePhraseInput: ValidateInputPhrase<'PHRASE_INPUT_ID'> = (
   }
 
   return removeExtraneousWhiteSpace(phrase).toLowerCase();
+};
+
+export const parseFailFastInput: ValidateFailFast<'FAIL_FAST_INPUT_ID'> = (
+  inputId,
+) => {
+  const failFast = getInput(inputId, { required: true });
+  debug(`${inputId} input: ${failFast}`);
+
+  return removeExtraneousWhiteSpace(failFast).toLowerCase() === 'true';
 };
