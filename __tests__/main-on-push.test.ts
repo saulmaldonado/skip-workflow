@@ -8,10 +8,12 @@ describe('Integration test: main (on push to master/main branch)', () => {
   const mockRepo = 'skip-workflow';
   const mockOwner = 'github-action';
   const mockEventName = 'push';
+  const mockFailFast = 'false';
 
   const mockEnv = {
     GITHUB_REPOSITORY: `${mockOwner}/${mockRepo}`,
     'INPUT_GITHUB-TOKEN': mockGithubToken,
+    'INPUT_FAIL-FAST': mockFailFast,
   };
 
   const oldEnv = { ...process.env };

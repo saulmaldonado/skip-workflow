@@ -12,6 +12,8 @@ describe('Integration Test: main', () => {
   const mockPhrase = 'docs';
   const mockPrId = 1;
   const mockRef = `refs/pull/${mockPrId}/merge`;
+  const mockFailFast = 'false';
+  const mockSearchOptions = JSON.stringify(['commit_messages']);
 
   const mockEnv = {
     GITHUB_REF: mockRef,
@@ -19,6 +21,8 @@ describe('Integration Test: main', () => {
     'INPUT_GITHUB-TOKEN': mockGithubToken,
     INPUT_PHRASE: mockPhrase,
     GITHUB_EVENT_NAME: 'pull_request',
+    'INPUT_FAIL-FAST': mockFailFast,
+    INPUT_SEARCH: mockSearchOptions,
   };
 
   const oldEnv = { ...process.env };
@@ -57,10 +61,6 @@ describe('Integration Test: main', () => {
   });
 
   describe('Search in: commit_messages', () => {
-    beforeAll(() => {
-      process.env.INPUT_SEARCH = JSON.stringify(['commit_messages']);
-    });
-
     it('should set output to true when all commit message match', async () => {
       const mockCommits = [
         {
@@ -129,6 +129,7 @@ describe('Integration Test: main', () => {
 
   describe('Search in: pull_request', () => {
     beforeAll(() => {
+      process.env = { ...mockEnv };
       process.env.INPUT_SEARCH = JSON.stringify(['pull_request']);
     });
 
@@ -213,6 +214,7 @@ describe('Integration Test: main', () => {
 
   describe('Search for regex', () => {
     beforeAll(() => {
+      process.env = { ...mockEnv };
       process.env.INPUT_SEARCH = JSON.stringify(['commit_messages']);
     });
 
@@ -302,6 +304,7 @@ describe('Integration Test: main', () => {
       listCommitsSpy.mockImplementationOnce(() => ({
         data: mockNonMatchingCommits,
       }));
+
       process.env.INPUT_PHRASE = mockPhraseRegex;
 
       await run();
@@ -313,6 +316,40 @@ describe('Integration Test: main', () => {
         },
         null,
       );
+    });
+  });
+
+  describe('Fail fast enabled', () => {
+    beforeAll(() => {
+      process.env = { ...mockEnv };
+      process.env['INPUT_FAIL-FAST'] = 'true';
+      process.env.INPUT_SEARCH = JSON.stringify(['commit_messages']);
+    });
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should exit with code 78 when fail-fast input is set to true and workflow can be skipped', async () => {
+      const mockProcessExit = jest.fn<never, [code?: number]>();
+      jest.spyOn(process, 'exit').mockImplementationOnce(mockProcessExit);
+
+      const mockCommits = [
+        {
+          commit: { message: 'docs: add docs', url: 'https://example.com' },
+          sha: '123456',
+        },
+        {
+          commit: { message: 'docs: edit docs', url: 'https://example.com' },
+          sha: '456789',
+        },
+      ];
+
+      listCommitsSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+
+      await run();
+
+      expect(mockProcessExit).toHaveBeenCalledWith(78);
     });
   });
 });
