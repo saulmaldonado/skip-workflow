@@ -52,4 +52,9 @@ jobs:
             -d '{"ref":"main", "inputs": {"sha": "${{ github.event.pull_request.head.sha || github.sha }}"}}'
 
       - name: codecov
-        run: bash <(curl -s https://codecov.io/bash)
+        run: |
+          if [[ -n "${{ github.event.pull_request.number }}"  ]]; then
+            bash <(curl -s https://codecov.io/bash) -P ${{ github.event.pull_request.number }}
+          else
+            bash <(curl -s https://codecov.io/bash)
+          fi
