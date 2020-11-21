@@ -8,6 +8,7 @@ import { parseSearchInput } from './lib/parseSearchInput';
 import { searchInCommits } from './searchInCommits';
 import { searchInPullRequest } from './searchInPullRequest';
 import {
+  parseFailFastInput,
   parsePhraseInput,
   parsePrMessageOptionInput,
 } from './lib/validateInput';
@@ -25,6 +26,7 @@ const {
   SEARCH_INPUT_ID,
   MATCH_FOUND_OUTPUT_ID,
   PR_MESSAGE,
+  FAIL_FAST_INPUT_ID,
   SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST },
 } = config;
 
@@ -45,6 +47,8 @@ const run: Run = async () => {
     debug(`options: ${[...searchOptions].toString()}`);
 
     const phrase = parsePhraseInput(PHRASE_INPUT_ID);
+
+    const failFast = parseFailFastInput(FAIL_FAST_INPUT_ID);
 
     const prMessageOption = parsePrMessageOptionInput(
       PR_MESSAGE,
@@ -82,6 +86,10 @@ const run: Run = async () => {
     const { log, result } = generateOutput({ ...searchResults, phrase });
 
     console.log(log);
+
+    if (result && failFast) {
+      process.exit(78);
+    }
 
     setOutput(MATCH_FOUND_OUTPUT_ID, result);
   } catch (error) {

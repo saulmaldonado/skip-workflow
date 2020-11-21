@@ -15,6 +15,7 @@ exports.config = {
     MATCH_FOUND_OUTPUT_ID: 'skip',
     SEARCH_INPUT_ID: 'search',
     PR_ID_INPUT_ID: 'pr-id',
+    FAIL_FAST_INPUT_ID: 'fail-fast',
     SEARCH_OPTIONS: {
         PULL_REQUEST: 'pull_request',
         COMMIT_MESSAGES: 'commit_messages',
@@ -412,7 +413,7 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
+exports.parseFailFastInput = exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable @typescript-eslint/comma-dangle */
 const core_1 = __webpack_require__(2186);
@@ -443,6 +444,11 @@ exports.parsePhraseInput = (inputId) => {
         return convertToRegex_1.convertToRegex(phrase);
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
+};
+exports.parseFailFastInput = (inputId) => {
+    const failFast = core_1.getInput(inputId, { required: true });
+    core_1.debug(`${inputId} input: ${failFast}`);
+    return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(failFast).toLowerCase() === 'true';
 };
 
 
@@ -487,7 +493,7 @@ const parseSearchInput_1 = __webpack_require__(9538);
 const searchInCommits_1 = __webpack_require__(237);
 const searchInPullRequest_1 = __webpack_require__(269);
 const validateInput_1 = __webpack_require__(2895);
-const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, SEARCH_INPUT_ID, MATCH_FOUND_OUTPUT_ID, PR_MESSAGE, SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST }, } = config_1.config;
+const { GITHUB_TOKEN_INPUT_ID, PHRASE_INPUT_ID, SEARCH_INPUT_ID, MATCH_FOUND_OUTPUT_ID, PR_MESSAGE, FAIL_FAST_INPUT_ID, SEARCH_OPTIONS: { COMMIT_MESSAGES, PULL_REQUEST }, } = config_1.config;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -501,6 +507,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
         core_1.debug(`options: ${[...searchOptions].toString()}`);
         const phrase = validateInput_1.parsePhraseInput(PHRASE_INPUT_ID);
+        const failFast = validateInput_1.parseFailFastInput(FAIL_FAST_INPUT_ID);
         const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE, searchOptions);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};
@@ -518,6 +525,9 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         const { log, result } = generateOutput_1.generateOutput(Object.assign(Object.assign({}, searchResults), { phrase }));
         console.log(log);
+        if (result && failFast) {
+            process.exit(78);
+        }
         core_1.setOutput(MATCH_FOUND_OUTPUT_ID, result);
     }
     catch (error) {
