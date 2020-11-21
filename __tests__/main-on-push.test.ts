@@ -20,6 +20,33 @@ describe('Integration test: main (on push to master/main branch)', () => {
 
   const mockOctokit = github.getOctokit(mockGithubToken);
 
+  const mockCommit = [
+    {
+      commit: {
+        message: '[skip-workflow]: example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '123456',
+    },
+  ];
+
+  const mockCommits = [
+    {
+      commit: {
+        message: '[skip-workflow]: example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '123456',
+    },
+    {
+      commit: {
+        message: '[skip-workflow]: another example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '456789',
+    },
+  ];
+
   let getOctokitSpy: jest.SpyInstance;
   let issueCommandSpy: jest.SpyInstance;
   let getCommitSpy: jest.SpyInstance;
@@ -32,7 +59,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
     getOctokitSpy = jest.spyOn(github, 'getOctokit');
     getOctokitSpy.mockImplementation(() => mockOctokit);
 
-    getCommitSpy = jest.spyOn(mockOctokit.repos, 'getCommit');
+    getCommitSpy = jest.spyOn(mockOctokit.repos, 'listCommits');
 
     issueCommandSpy = jest.spyOn(command, 'issueCommand');
   });
@@ -42,7 +69,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
     process.env = oldEnv;
   });
 
-  it('should return when single commit matches with phrase', async () => {
+  it('should return true when single commit matches with phrase', async () => {
     const mockPhrase = '[skip-workflow]';
     process.env.INPUT_PHRASE = mockPhrase;
     process.env.GITHUB_EVENT_NAME = mockEventName;
@@ -50,14 +77,6 @@ describe('Integration test: main (on push to master/main branch)', () => {
       'commit_messages',
       'pull_request', // push should skip pull_request option
     ]);
-
-    const mockCommit = {
-      commit: {
-        message: '[skip-workflow]: example commit for e2e test',
-        url: 'https://example.com',
-      },
-      sha: '123456',
-    };
 
     getCommitSpy.mockImplementationOnce(() => ({ data: mockCommit }));
 
@@ -72,7 +91,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
     );
   });
 
-  it('should return when single commit matches with RegExp', async () => {
+  it('should return true when single commit matches with RegExp', async () => {
     const mockRegex = '/^\\[skip-workflow\\]/gi';
     process.env.INPUT_PHRASE = mockRegex;
     process.env.GITHUB_EVENT_NAME = mockEventName;
@@ -81,15 +100,51 @@ describe('Integration test: main (on push to master/main branch)', () => {
       'pull_request', // push should skip pull_request option
     ]);
 
-    const mockCommit = {
-      commit: {
-        message: '[skip-workflow]: example commit for e2e test',
-        url: 'https://example.com',
-      },
-      sha: '123456',
-    };
-
     getCommitSpy.mockImplementationOnce(() => ({ data: mockCommit }));
+
+    await run();
+
+    expect(issueCommandSpy).toBeCalledWith(
+      'set-output',
+      {
+        name: config.MATCH_FOUND_OUTPUT_ID,
+      },
+      true,
+    );
+  });
+
+  it('should return true when multiple commits from push matches with phrase', async () => {
+    const mockPhrase = '[skip-workflow]';
+    process.env.INPUT_PHRASE = mockPhrase;
+    process.env.GITHUB_EVENT_NAME = mockEventName;
+    process.env.INPUT_SEARCH = JSON.stringify([
+      'commit_messages',
+      'pull_request', // push should skip pull_request option
+    ]);
+
+    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+
+    await run();
+
+    expect(issueCommandSpy).toBeCalledWith(
+      'set-output',
+      {
+        name: config.MATCH_FOUND_OUTPUT_ID,
+      },
+      true,
+    );
+  });
+
+  it('should return true when single commit matches with RegExp', async () => {
+    const mockRegex = '/^\\[skip-workflow\\]/gi';
+    process.env.INPUT_PHRASE = mockRegex;
+    process.env.GITHUB_EVENT_NAME = mockEventName;
+    process.env.INPUT_SEARCH = JSON.stringify([
+      'commit_messages',
+      'pull_request', // push should skip pull_request option
+    ]);
+
+    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommits }));
 
     await run();
 
