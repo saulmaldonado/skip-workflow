@@ -29,20 +29,19 @@ export const getCommits: GetCommits = async (octokit, context) => {
 
   if (eventName === config.PUSH_EVENT_NAME) {
     const {
-      data: {
-        sha,
-        commit: { message },
-        url,
-      },
-    } = await repos.getCommit({
+      payload: { before }, // The SHA of the most recent commit on ref before the push.
+    } = context;
+
+    const { data: commits } = await repos.listCommits({
       owner,
       repo,
-      ref,
+      sha: before,
     });
 
-    debug(`Found commit sha: ${sha}. ${url}`);
-
-    return [{ message, sha }];
+    return commits.map(({ commit: { message, url }, sha }) => {
+      debug(`Found commit sha: ${sha} in push. ${url}`);
+      return { message, sha };
+    });
   }
 
   const prId = getPrId(ref);
