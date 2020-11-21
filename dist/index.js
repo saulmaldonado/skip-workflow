@@ -127,13 +127,16 @@ const getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, funct
     const { pulls, repos } = octokit;
     const { ref, repo: { owner, repo }, eventName, } = context;
     if (eventName === config_1.config.PUSH_EVENT_NAME) {
-        const { data: { sha, commit: { message }, url, }, } = yield repos.getCommit({
+        const { payload: { before }, } = context;
+        const { data: commits } = yield repos.listCommits({
             owner,
             repo,
-            ref,
+            sha: before,
         });
-        core_1.debug(`Found commit sha: ${sha}. ${url}`);
-        return [{ message, sha }];
+        return commits.map(({ commit: { message, url }, sha }) => {
+            core_1.debug(`Found commit sha: ${sha} in push. ${url}`);
+            return { message, sha };
+        });
     }
     const prId = getPrId_1.getPrId(ref);
     const { data: commits } = yield pulls.listCommits({
