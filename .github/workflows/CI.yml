@@ -54,7 +54,7 @@ jobs:
       - name: codecov
         run: |
           if [[ -n "${{ github.event.pull_request.number }}"  ]]; then
-            bash <(curl -s https://codecov.io/bash) -P ${{ github.event.pull_request.number }}
+            bash <(curl -s https://codecov.io/bash) -P ${{ github.event.pull_request.number }} -C ${{ github.event.pull_request.head.sha }}
           else
             bash <(curl -s https://codecov.io/bash)
           fi
