@@ -12,23 +12,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
       - name: install
         run: yarn --frozen-lockfile
 
       - name: build
-        run: yarn build
+        run: $(yarn bin)/tsc
 
       - name: format
-        run: yarn format-check
+        run: $(yarn bin)/prettier --check **/*.ts
 
       - name: lint
-        run: yarn lint
+        run: $(yarn bin)/eslint **/*.ts
 
       - name: package
-        run: yarn package
+        run: $(yarn bin)/ncc build --source-map --license licenses.txt
 
       - name: test
-        run: yarn test
+        run: $(yarn bin)/jest --coverage
 
       - name: dispatch e2e test
         run: |
