@@ -40,14 +40,15 @@ exports.config = {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.generateOutput = exports.createOutputNotFoundLog = exports.createOutputFoundLog = void 0;
 const leadingAmpersandRegex = /^( & )/;
-exports.createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult, message = 'title', phrase, }) => {
+const createOutputFoundLog = ({ commitMessagesSearchResult, titleSearchResult, message = 'title', phrase, }) => {
     let log = '';
     log += commitMessagesSearchResult ? 'all commit messages' : '';
     log += titleSearchResult ? ` & ${message}` : '';
     log = log.replace(leadingAmpersandRegex, '');
     return `⏭ "${phrase}" found in: ${log}. skipping workflow...`;
 };
-exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
+exports.createOutputFoundLog = createOutputFoundLog;
+const createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     let log = '';
     if (commitMessagesSearchResult === false) {
         log += `commit message: ${commit.message} sha: ${commit.sha}`;
@@ -58,6 +59,7 @@ exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResu
     log = log.replace(leadingAmpersandRegex, '');
     return `❗ "${phrase}" not found in: ${log}. continuing workflow...`;
 };
+exports.createOutputNotFoundLog = createOutputNotFoundLog;
 /**
  * creates result and output log
  * @param {Object} CreateOutputParameters
@@ -69,7 +71,7 @@ exports.createOutputNotFoundLog = ({ commitMessagesSearchResult, titleSearchResu
  *
  * @returns {{log: string, result: boolean}}
  */
-exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
+const generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commit, message, phrase, }) => {
     if (commitMessagesSearchResult || titleSearchResult) {
         const log = exports.createOutputFoundLog({
             commitMessagesSearchResult,
@@ -90,6 +92,7 @@ exports.generateOutput = ({ commitMessagesSearchResult, titleSearchResult, commi
     const result = null;
     return { log, result };
 };
+exports.generateOutput = generateOutput;
 
 
 /***/ }),
@@ -120,7 +123,7 @@ const config_1 = __webpack_require__(88);
  *
  * @returns {Promise<{message: string, sha: string}[]>} Promise if commit messages and shas array
  */
-exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
+const getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
     const { pulls, repos } = octokit;
     const { ref, repo: { owner, repo }, eventName, } = context;
     if (eventName === config_1.config.PUSH_EVENT_NAME) {
@@ -143,6 +146,7 @@ exports.getCommits = (octokit, context) => __awaiter(void 0, void 0, void 0, fun
         return { message, sha };
     });
 });
+exports.getCommits = getCommits;
 
 
 /***/ }),
@@ -163,7 +167,7 @@ const config_1 = __webpack_require__(88);
  *
  * @returns {number} Pull request ID
  */
-exports.getPrId = (ref) => {
+const getPrId = (ref) => {
     var _a;
     const { PR_ID_INPUT_ID } = config_1.config;
     const prIdRegex = /(?<=refs\/pull\/)[\d\w]+(?=\/merge)/i;
@@ -183,6 +187,7 @@ exports.getPrId = (ref) => {
     }
     return Number(prId);
 };
+exports.getPrId = getPrId;
 
 
 /***/ }),
@@ -214,7 +219,7 @@ exports.pullRequestCache = {
  *
  * @returns {PullsGetResponseData} pull request object
  */
-exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
+const getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0, function* () {
     if (exports.pullRequestCache === null || exports.pullRequestCache === void 0 ? void 0 : exports.pullRequestCache.cache)
         return exports.pullRequestCache.cache;
     const { repo: { owner, repo }, ref, } = context;
@@ -228,6 +233,7 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
     exports.pullRequestCache.cache = pr;
     return pr;
 });
+exports.getPullRequest = getPullRequest;
 
 
 /***/ }),
@@ -239,7 +245,7 @@ exports.getPullRequest = (octokit, context) => __awaiter(void 0, void 0, void 0,
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.convertToRegex = void 0;
-exports.convertToRegex = (phrase) => {
+const convertToRegex = (phrase) => {
     try {
         const [, regex, tags] = phrase.split('/');
         return new RegExp(regex, tags);
@@ -248,6 +254,7 @@ exports.convertToRegex = (phrase) => {
         throw new Error(`Error converting "${phrase}" to RegExp`);
     }
 };
+exports.convertToRegex = convertToRegex;
 
 
 /***/ }),
@@ -260,7 +267,7 @@ exports.convertToRegex = (phrase) => {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isMatch = void 0;
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
-exports.isMatch = (phrase, string) => {
+const isMatch = (phrase, string) => {
     if (phrase instanceof RegExp) {
         console.log(`${phrase} instance of RegExp ${phrase instanceof RegExp}`);
         /* RegExp copy prevents g flag from storing lastIndex between test */
@@ -272,6 +279,7 @@ exports.isMatch = (phrase, string) => {
     const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
     return lowercaseString.includes(phrase);
 };
+exports.isMatch = isMatch;
 
 
 /***/ }),
@@ -283,10 +291,11 @@ exports.isMatch = (phrase, string) => {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isRegex = void 0;
-exports.isRegex = (string) => {
+const isRegex = (string) => {
     const regexRegex = /^\/.+\/[gmisut]*$/;
     return regexRegex.test(string);
 };
+exports.isRegex = isRegex;
 
 
 /***/ }),
@@ -298,7 +307,8 @@ exports.isRegex = (string) => {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.removeExtraneousWhiteSpace = void 0;
-exports.removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').trim();
+const removeExtraneousWhiteSpace = (string) => string.replace(/\s+/g, ' ').trim();
+exports.removeExtraneousWhiteSpace = removeExtraneousWhiteSpace;
 
 
 /***/ }),
@@ -318,7 +328,7 @@ const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
  *
  * @returns {Set<string>} Set of options found from input
  */
-exports.parseSearchInput = (searchInput) => {
+const parseSearchInput = (searchInput) => {
     const options = JSON.parse(searchInput);
     const { SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES }, } = config_1.config;
     const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
@@ -331,6 +341,7 @@ exports.parseSearchInput = (searchInput) => {
     };
     return new Set(options.map(findOption));
 };
+exports.parseSearchInput = parseSearchInput;
 
 
 /***/ }),
@@ -352,7 +363,7 @@ const isMatch_1 = __webpack_require__(6410);
  * @returns {{ result: true; commit: undefined } | { result: false; commit: Commit }}
  * object with result and commit that does not match the phrase
  */
-exports.searchAllCommitMessages = (commits, phrase) => {
+const searchAllCommitMessages = (commits, phrase) => {
     const commit = commits.find(({ message, sha }) => {
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
         console.log(phrase);
@@ -364,6 +375,7 @@ exports.searchAllCommitMessages = (commits, phrase) => {
     }
     return { result, commit: commit };
 };
+exports.searchAllCommitMessages = searchAllCommitMessages;
 
 
 /***/ }),
@@ -386,7 +398,7 @@ const isMatch_1 = __webpack_require__(6410);
  * @returns {SearchPullRequestMessageResult} result object with search result
  * and message is applicable
  */
-exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = { textToSearch: 'title' }) => {
+const searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = { textToSearch: 'title' }) => {
     let message = '';
     if (textToSearch === 'title' || textToSearch === 'title & body') {
         core_1.debug(`Searching for ${phrase} in title`);
@@ -403,6 +415,7 @@ exports.searchPullRequestMessage = ({ title, body }, phrase, { textToSearch } = 
     }
     return { result, message };
 };
+exports.searchPullRequestMessage = searchPullRequestMessage;
 
 
 /***/ }),
@@ -421,7 +434,7 @@ const config_1 = __webpack_require__(88);
 const convertToRegex_1 = __webpack_require__(2738);
 const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
-exports.parsePrMessageOptionInput = (inputId, searchOptions) => {
+const parsePrMessageOptionInput = (inputId, searchOptions) => {
     const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
     const input = core_1.getInput(inputId);
     if (!input)
@@ -436,7 +449,8 @@ exports.parsePrMessageOptionInput = (inputId, searchOptions) => {
     }
     return lowerCaseInput;
 };
-exports.parsePhraseInput = (inputId) => {
+exports.parsePrMessageOptionInput = parsePrMessageOptionInput;
+const parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
     if (isRegex_1.isRegex(phrase)) {
@@ -445,11 +459,13 @@ exports.parsePhraseInput = (inputId) => {
     }
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
-exports.parseFailFastInput = (inputId) => {
+exports.parsePhraseInput = parsePhraseInput;
+const parseFailFastInput = (inputId) => {
     const failFast = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${failFast}`);
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(failFast).toLowerCase() === 'true';
 };
+exports.parseFailFastInput = parseFailFastInput;
 
 
 /***/ }),
@@ -566,10 +582,11 @@ const searchCommitMessages_1 = __webpack_require__(7835);
  *
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
-exports.searchInCommits = (octokit, context, phrase) => __awaiter(void 0, void 0, void 0, function* () {
+const searchInCommits = (octokit, context, phrase) => __awaiter(void 0, void 0, void 0, function* () {
     const commits = yield getCommits_1.getCommits(octokit, context);
     return searchCommitMessages_1.searchAllCommitMessages(commits, phrase);
 });
+exports.searchInCommits = searchInCommits;
 
 
 /***/ }),
@@ -602,7 +619,7 @@ const searchPullRequestMessage_1 = __webpack_require__(1616);
  *
  * @returns {{ result: boolean, commit?: Commit }} results object from the search
  */
-exports.searchInPullRequest = (octokit, context, phrase, options) => __awaiter(void 0, void 0, void 0, function* () {
+const searchInPullRequest = (octokit, context, phrase, options) => __awaiter(void 0, void 0, void 0, function* () {
     if (context.eventName === config_1.config.PUSH_EVENT_NAME) {
         return { result: undefined, message: undefined };
     }
@@ -610,6 +627,7 @@ exports.searchInPullRequest = (octokit, context, phrase, options) => __awaiter(v
     core_1.debug(JSON.stringify({ title: pullRequest.title, body: pullRequest.body }));
     return searchPullRequestMessage_1.searchPullRequestMessage(pullRequest, phrase, options);
 });
+exports.searchInPullRequest = searchInPullRequest;
 
 
 /***/ }),
