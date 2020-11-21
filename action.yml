@@ -26,6 +26,7 @@ inputs:
   fail-fast:
     required: true
     description: 'skip and fail workflow immediately after action confirms workflow can be skipped. Enabling this will fail the check.'
+    default: 'false'
 outputs:
   skip:
     description: 'Boolean output indicating if the workflow can be skipped'
