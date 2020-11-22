@@ -35,6 +35,7 @@ on:
   push:
     pull_request:
       - main
+      - master
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -85,6 +86,7 @@ on:
   push:
     pull_request:
       - main
+      - master
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -126,6 +128,67 @@ jobs:
 
 ---
 
+## Skip all other jobs if phrase is found in **_all_** commit messages of the incoming pull request
+
+<details>
+
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    pull_request:
+      - main
+      - master
+
+jobs:
+  skip-workflow:
+    runs-on: ubuntu-latest
+
+    outputs: # job outputs
+      skip: ${{ steps.skip-workflow.outputs.skip }}
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-workflow]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: skip-workflow # needs is required for reference and to prevent both jobs running at the same time
+
+    if: ${{ !needs.skip-workflow.outputs.skip }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm install
+
+      - name: Build
+        if: ${{ !steps.skip-workflow.outputs.skip }}
+        run: npm run build
+```
+
+</details>
+
+---
+
 ## Skip rest of job if phrase is found in **_all_** commit messages and the **_title_** of the incoming pull request
 
 <details>
@@ -137,6 +200,7 @@ on:
   push:
     pull_request:
       - main
+      - master
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -180,7 +244,7 @@ jobs:
 
 ---
 
-## Skip rest of job if phrase is found in `HEAD` commit message on push to main/master branch
+## Skip rest of job if phrase is found in **_all_** commit messages in push to main/master branch
 
 <details>
 
@@ -192,6 +256,7 @@ on:
   push:
     branches:
       - main
+      - master
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -233,7 +298,7 @@ jobs:
 
 ---
 
-## Skip all other jobs if phrase is found matches in `HEAD` commit message on push to main/master branch
+## Skip all other jobs if phrase is found in **_all_** commit messages in push to main/master branch
 
 <details>
 
@@ -245,6 +310,7 @@ on:
   push:
     branches:
       - main
+      - master
 jobs:
   skip-workflow:
     runs-on: ubuntu-latest
@@ -292,6 +358,48 @@ jobs:
 
 ---
 
+## Fail and skip workflow immediately if phrase is found in **_all_** commit messages in push to main/master branch
+
+<details>
+
+  <summary>View example workflow </summary>
+
+```yaml
+name: 'NodeJS CI'
+on:
+  push:
+    branches:
+      - main
+      - master
+jobs:
+  skip-workflow:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: skip-workflow
+        id: skip-workflow # id used for referencing step
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-workflow]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build
+        run: npm run build
+
+      - name: test
+        run: npm run test
+```
+
+</details>
+
+---
+
 ## Inputs
 
 ### `phrase`
@@ -303,7 +411,6 @@ with:
   phrase: '[skip-workflow]' # searches for phrase anywhere in text
   # or
   phrase: '/^\[skip-workflow\]/i'
-  # if any symbols are escaped or metacharacters are used, backslashes must be escaped to work
 ```
 
 ### `search`
@@ -327,7 +434,7 @@ Pull request text to search in. To be used along side `search` option input `'["
 with:
   search: '["pull_request"]' # pull_request must be included in search option input array
 
-  pr-message: 'title'
+  pr-message: 'title' # default
   # or
   pr-message: 'body'
   # or
@@ -341,6 +448,19 @@ with:
 ```yaml
 with:
   github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### `fail-fast`
+
+Skip and fail workflow immediately after action confirms workflow can be skipped. Enabling this will fail the check.
+
+**default**: `'false'`
+
+```yaml
+with:
+  fail-fast: 'false' # default
+  # or
+  fail-fast: 'true'
 ```
 
 ## Output
