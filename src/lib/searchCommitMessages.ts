@@ -25,7 +25,6 @@ export const searchAllCommitMessages: SearchCommitMessages = (
 ) => {
   const commit = commits.find(({ message, sha }) => {
     debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-    console.log(phrase);
 
     return !isMatch(phrase, message);
   });

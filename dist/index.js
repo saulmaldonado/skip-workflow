@@ -279,11 +279,8 @@ exports.isMatch = void 0;
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
 const isMatch = (phrase, string) => {
     if (phrase instanceof RegExp) {
-        console.log(`${phrase} instance of RegExp ${phrase instanceof RegExp}`);
         /* RegExp copy prevents g flag from storing lastIndex between test */
         const regexCopy = new RegExp(phrase);
-        console.log(regexCopy);
-        console.log(string);
         return regexCopy.test(string);
     }
     const lowercaseString = removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(string).toLowerCase();
@@ -376,7 +373,6 @@ const isMatch_1 = __webpack_require__(6410);
 const searchAllCommitMessages = (commits, phrase) => {
     const commit = commits.find(({ message, sha }) => {
         console_1.debug(`Searching for "${phrase}" in "${message}" sha: ${sha}`);
-        console.log(phrase);
         return !isMatch_1.isMatch(phrase, message);
     });
     const result = !commit;
