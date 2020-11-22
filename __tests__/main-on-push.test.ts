@@ -113,7 +113,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
     );
   });
 
-  it('should return true when multiple commits from push matches with phrase', async () => {
+  it('should return true when multiple commits not including before push matches with phrase', async () => {
     const mockPhrase = '[skip-workflow]';
     process.env.INPUT_PHRASE = mockPhrase;
     process.env.GITHUB_EVENT_NAME = mockEventName;
@@ -121,8 +121,19 @@ describe('Integration test: main (on push to master/main branch)', () => {
       'commit_messages',
       'pull_request', // push should skip pull_request option
     ]);
+    process.env.GITHUB_EVENT_PATH = `${__dirname}/utils/pushEvent.json`; // path to mock push webhook payload json file
 
-    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+    const mockBeforeCommit = {
+      commit: {
+        message: 'example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '159753',
+    };
+
+    getCommitSpy.mockImplementationOnce(() => ({
+      data: [...mockCommits, mockBeforeCommit],
+    }));
 
     await run();
 
@@ -135,7 +146,7 @@ describe('Integration test: main (on push to master/main branch)', () => {
     );
   });
 
-  it('should return true when single commit matches with RegExp', async () => {
+  it('should return true when multiple commits not including before push matches with RegExp', async () => {
     const mockRegex = '/^\\[skip-workflow\\]/gi';
     process.env.INPUT_PHRASE = mockRegex;
     process.env.GITHUB_EVENT_NAME = mockEventName;
@@ -144,7 +155,19 @@ describe('Integration test: main (on push to master/main branch)', () => {
       'pull_request', // push should skip pull_request option
     ]);
 
-    getCommitSpy.mockImplementationOnce(() => ({ data: mockCommits }));
+    process.env.GITHUB_EVENT_PATH = `${__dirname}/utils/pushEvent.json`; // path to mock push webhook payload json file
+
+    const mockBeforeCommit = {
+      commit: {
+        message: 'example commit for e2e test',
+        url: 'https://example.com',
+      },
+      sha: '159753',
+    };
+
+    getCommitSpy.mockImplementationOnce(() => ({
+      data: [...mockCommits, mockBeforeCommit],
+    }));
 
     await run();
 

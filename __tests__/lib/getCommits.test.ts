@@ -116,4 +116,34 @@ describe('Unit Test: getCommits', () => {
 
     expect(result).toEqual(mockCommitResult);
   });
+
+  it('should return all commits expect the before commit when eventName matches with push event', async () => {
+    process.env.GITHUB_EVENT_NAME = config.PUSH_EVENT_NAME;
+    mockContext = new Context();
+    mockContext.payload.before = '159753';
+
+    const mockBeforeCommit = {
+      commit: { message: 'message1', url: 'https://example.com' },
+      sha: '159753',
+    };
+
+    getCommitSpy.mockImplementationOnce(() => ({
+      data: [...mockCommits, mockBeforeCommit],
+    }));
+
+    const mockCommitResult = [
+      {
+        message: 'message1',
+        sha: '123456',
+      },
+      {
+        message: 'message2',
+        sha: '456789',
+      },
+    ];
+
+    const result = await getCommits(octokit, mockContext);
+
+    expect(result).toEqual(mockCommitResult);
+  });
 });
