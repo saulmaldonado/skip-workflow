@@ -1,6 +1,7 @@
 import { debug } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { ReposListCommitsResponseData } from '@octokit/types';
 import { getPrId } from './getPrId';
 import { config } from '../config';
 
@@ -12,7 +13,7 @@ export type GetCommits = (
 ) => Promise<Commit[]>;
 
 /**
- *
+ * fetches all commits for pull request or push event
  * @param {octokit} octokit Octokit instance
  * @param {Context} context workflow context instance
  *
@@ -29,20 +30,28 @@ export const getCommits: GetCommits = async (octokit, context) => {
 
   if (eventName === config.PUSH_EVENT_NAME) {
     const {
-      data: {
-        sha,
-        commit: { message },
-        url,
-      },
-    } = await repos.getCommit({
+      payload: { before }, // The SHA of the most recent commit on ref before the push.
+    } = context;
+
+    const { data } = await repos.listCommits({
       owner,
       repo,
-      ref,
     });
 
-    debug(`Found commit sha: ${sha}. ${url}`);
+    const commits: ReposListCommitsResponseData = [];
 
-    return [{ message, sha }];
+    data.every((commit) => {
+      if (commit.sha === before) {
+        return false;
+      }
+      commits.push(commit);
+      return true;
+    });
+
+    return commits.map(({ commit: { message, url }, sha }) => {
+      debug(`Found commit sha: ${sha} in push. ${url}`);
+      return { message, sha };
+    });
   }
 
   const prId = getPrId(ref);
