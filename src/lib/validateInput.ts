@@ -8,19 +8,13 @@ import { removeExtraneousWhiteSpace } from './helpers/removeExtraneousWhiteSpace
 
 type ValidateInput<
   T extends keyof typeof config,
+  R,
   K = Record<string, string>
-> = (inputId: typeof config[T], options?: K) => string;
-
-type ValidateInputPhrase<T extends keyof typeof config> = (
-  inputId: typeof config[T],
-) => string | RegExp;
-
-type ValidateFailFast<T extends keyof typeof config> = (
-  inputId: typeof config[T],
-) => boolean;
+> = (inputId: typeof config[T], options?: K) => R;
 
 export const parsePrMessageOptionInput: ValidateInput<
   'PR_MESSAGE',
+  string,
   Set<string>
 > = (inputId, searchOptions) => {
   const options: Set<string> = new Set(
@@ -46,9 +40,10 @@ export const parsePrMessageOptionInput: ValidateInput<
   return lowerCaseInput;
 };
 
-export const parsePhraseInput: ValidateInputPhrase<'PHRASE_INPUT_ID'> = (
-  inputId,
-) => {
+export const parsePhraseInput: ValidateInput<
+  'PHRASE_INPUT_ID',
+  string | RegExp
+> = (inputId) => {
   const phrase = getInput(inputId, { required: true });
   debug(`${inputId} input: ${phrase}`);
 
@@ -60,11 +55,46 @@ export const parsePhraseInput: ValidateInputPhrase<'PHRASE_INPUT_ID'> = (
   return removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
 
-export const parseFailFastInput: ValidateFailFast<'FAIL_FAST_INPUT_ID'> = (
-  inputId,
-) => {
+export const parseFailFastInput: ValidateInput<
+  'FAIL_FAST_INPUT_ID',
+  boolean
+> = (inputId) => {
   const failFast = getInput(inputId, { required: true });
   debug(`${inputId} input: ${failFast}`);
 
   return removeExtraneousWhiteSpace(failFast).toLowerCase() === 'true';
+};
+
+/**
+ * Parses and validate input from workflow and returns a Set of options found
+ * @param {string} searchInput JSON string array input from the workflow
+ *
+ * @returns {Set<string>} Set of options found from input
+ */
+export const parseSearchInput: ValidateInput<'SEARCH_INPUT_ID', Set<string>> = (
+  inputId,
+) => {
+  const searchInput = getInput(inputId, { required: true });
+  debug(`${inputId} input: ${searchInput}`);
+
+  const options: string[] = JSON.parse(searchInput);
+  const {
+    SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES },
+  } = config;
+  const searchOptions: string[] = [PULL_REQUEST, COMMIT_MESSAGES];
+
+  const validateOptions = (option: string): string => {
+    const lowerCaseOption = option.toLowerCase();
+
+    if (!searchOptions.includes(removeExtraneousWhiteSpace(lowerCaseOption))) {
+      throw new Error(`"${option}" is not a valid search option`);
+    }
+    return lowerCaseOption;
+  };
+
+  const validatedOptions = new Set(options.map(validateOptions));
+
+  debug(`options: ${[...validatedOptions].toString()}`);
+
+  return validatedOptions;
 };

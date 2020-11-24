@@ -202,7 +202,7 @@ exports.getPrId = getPrId;
 
 /***/ }),
 
-/***/ 3644:
+/***/ 9538:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -320,39 +320,6 @@ exports.removeExtraneousWhiteSpace = removeExtraneousWhiteSpace;
 
 /***/ }),
 
-/***/ 9538:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseSearchInput = void 0;
-const config_1 = __webpack_require__(88);
-const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
-/**
- * Parses input from workflow and outputs a Set of options found
- * @param {string} searchInput JSON string array input from the workflow
- *
- * @returns {Set<string>} Set of options found from input
- */
-const parseSearchInput = (searchInput) => {
-    const options = JSON.parse(searchInput);
-    const { SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES }, } = config_1.config;
-    const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
-    const findOption = (option) => {
-        const lowerCaseOption = option.toLowerCase();
-        if (!searchOptions.includes(removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(lowerCaseOption))) {
-            throw new Error(`"${option}" is not a valid search option`);
-        }
-        return lowerCaseOption;
-    };
-    return new Set(options.map(findOption));
-};
-exports.parseSearchInput = parseSearchInput;
-
-
-/***/ }),
-
 /***/ 7835:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -432,7 +399,7 @@ exports.searchPullRequestMessage = searchPullRequestMessage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseFailFastInput = exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
+exports.parseSearchInput = exports.parseFailFastInput = exports.parsePhraseInput = exports.parsePrMessageOptionInput = void 0;
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable @typescript-eslint/comma-dangle */
 const core_1 = __webpack_require__(2186);
@@ -472,6 +439,30 @@ const parseFailFastInput = (inputId) => {
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(failFast).toLowerCase() === 'true';
 };
 exports.parseFailFastInput = parseFailFastInput;
+/**
+ * Parses and validate input from workflow and returns a Set of options found
+ * @param {string} searchInput JSON string array input from the workflow
+ *
+ * @returns {Set<string>} Set of options found from input
+ */
+const parseSearchInput = (inputId) => {
+    const searchInput = core_1.getInput(inputId, { required: true });
+    core_1.debug(`${inputId} input: ${searchInput}`);
+    const options = JSON.parse(searchInput);
+    const { SEARCH_OPTIONS: { PULL_REQUEST, COMMIT_MESSAGES }, } = config_1.config;
+    const searchOptions = [PULL_REQUEST, COMMIT_MESSAGES];
+    const validateOptions = (option) => {
+        const lowerCaseOption = option.toLowerCase();
+        if (!searchOptions.includes(removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(lowerCaseOption))) {
+            throw new Error(`"${option}" is not a valid search option`);
+        }
+        return lowerCaseOption;
+    };
+    const validatedOptions = new Set(options.map(validateOptions));
+    core_1.debug(`options: ${[...validatedOptions].toString()}`);
+    return validatedOptions;
+};
+exports.parseSearchInput = parseSearchInput;
 
 
 /***/ }),
@@ -511,7 +502,6 @@ const github_1 = __webpack_require__(5438);
 const context_1 = __webpack_require__(4087);
 const config_1 = __webpack_require__(88);
 const generateOutput_1 = __webpack_require__(8002);
-const parseSearchInput_1 = __webpack_require__(9538);
 const searchInCommits_1 = __webpack_require__(237);
 const searchInPullRequest_1 = __webpack_require__(269);
 const validateInput_1 = __webpack_require__(2895);
@@ -524,12 +514,9 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             required: true,
         });
         core_1.debug(`${GITHUB_TOKEN_INPUT_ID} input: ${githubToken}`);
-        const searchInput = core_1.getInput(SEARCH_INPUT_ID, { required: true });
-        core_1.debug(`${SEARCH_INPUT_ID} input: ${searchInput}`);
-        const searchOptions = parseSearchInput_1.parseSearchInput(searchInput);
-        core_1.debug(`options: ${[...searchOptions].toString()}`);
         const phrase = validateInput_1.parsePhraseInput(PHRASE_INPUT_ID);
         const failFast = validateInput_1.parseFailFastInput(FAIL_FAST_INPUT_ID);
+        const searchOptions = validateInput_1.parseSearchInput(SEARCH_INPUT_ID);
         const prMessageOption = validateInput_1.parsePrMessageOptionInput(PR_MESSAGE, searchOptions);
         const octokit = github_1.getOctokit(githubToken);
         const searchResults = {};
@@ -616,7 +603,7 @@ exports.searchInPullRequest = void 0;
 /* eslint-disable @typescript-eslint/indent */
 const core_1 = __webpack_require__(2186);
 const config_1 = __webpack_require__(88);
-const getPullRequest_1 = __webpack_require__(3644);
+const getPullRequest_1 = __webpack_require__(9538);
 const searchPullRequestMessage_1 = __webpack_require__(1616);
 /**
  * @param {Context} args.context workflow context
