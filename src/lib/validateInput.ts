@@ -12,6 +12,11 @@ type ValidateInput<
   K = Record<string, string>
 > = (inputId: typeof config[T], options?: K) => R;
 
+/**
+ * Parses and validates 'pr-message' input from workflow and returns the option
+ * @param {string} inputId
+ * @param {} searchOptions
+ */
 export const parsePrMessageOptionInput: ValidateInput<
   'PR_MESSAGE',
   string,
@@ -40,6 +45,12 @@ export const parsePrMessageOptionInput: ValidateInput<
   return lowerCaseInput;
 };
 
+/**
+ * Parses and validates 'phrase' input from workflow and returns the phrase as string or RegExp
+ * @param {string} inputId
+ *
+ * @returns {string | RegExp} phrase string or RegExp
+ */
 export const parsePhraseInput: ValidateInput<
   'PHRASE_INPUT_ID',
   string | RegExp
@@ -55,6 +66,12 @@ export const parsePhraseInput: ValidateInput<
   return removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
 
+/**
+ * Parses and validates 'fail-fast' input from workflow and returns the fail-fast option
+ * @param {string} inputId
+ *
+ * @returns {boolean} fail-fast option
+ */
 export const parseFailFastInput: ValidateInput<
   'FAIL_FAST_INPUT_ID',
   boolean
@@ -67,7 +84,7 @@ export const parseFailFastInput: ValidateInput<
 
 /**
  * Parses and validate input from workflow and returns a Set of options found
- * @param {string} searchInput JSON string array input from the workflow
+ * @param {string} inputId JSON string array input from the workflow
  *
  * @returns {Set<string>} Set of options found from input
  */

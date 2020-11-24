@@ -407,6 +407,11 @@ const config_1 = __webpack_require__(88);
 const convertToRegex_1 = __webpack_require__(2738);
 const isRegex_1 = __webpack_require__(9282);
 const removeExtraneousWhiteSpace_1 = __webpack_require__(4411);
+/**
+ * Parses and validates 'pr-message' input from workflow and returns the option
+ * @param {string} inputId
+ * @param {} searchOptions
+ */
 const parsePrMessageOptionInput = (inputId, searchOptions) => {
     const options = new Set(Object.values(config_1.config.PR_MESSAGE_OPTIONS));
     const input = core_1.getInput(inputId);
@@ -423,6 +428,12 @@ const parsePrMessageOptionInput = (inputId, searchOptions) => {
     return lowerCaseInput;
 };
 exports.parsePrMessageOptionInput = parsePrMessageOptionInput;
+/**
+ * Parses and validates 'phrase' input from workflow and returns the phrase as string or RegExp
+ * @param {string} inputId
+ *
+ * @returns {string | RegExp} phrase string or RegExp
+ */
 const parsePhraseInput = (inputId) => {
     const phrase = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${phrase}`);
@@ -433,6 +444,12 @@ const parsePhraseInput = (inputId) => {
     return removeExtraneousWhiteSpace_1.removeExtraneousWhiteSpace(phrase).toLowerCase();
 };
 exports.parsePhraseInput = parsePhraseInput;
+/**
+ * Parses and validates 'fail-fast' input from workflow and returns the fail-fast option
+ * @param {string} inputId
+ *
+ * @returns {boolean} fail-fast option
+ */
 const parseFailFastInput = (inputId) => {
     const failFast = core_1.getInput(inputId, { required: true });
     core_1.debug(`${inputId} input: ${failFast}`);
@@ -441,7 +458,7 @@ const parseFailFastInput = (inputId) => {
 exports.parseFailFastInput = parseFailFastInput;
 /**
  * Parses and validate input from workflow and returns a Set of options found
- * @param {string} searchInput JSON string array input from the workflow
+ * @param {string} inputId JSON string array input from the workflow
  *
  * @returns {Set<string>} Set of options found from input
  */
