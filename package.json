@@ -1,6 +1,6 @@
 {
   "name": "skip-workflow",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Github action for skipping workflows upon matching commit message(s) or pull request title/body",
   "main": "lib/main.js",
   "scripts": {
