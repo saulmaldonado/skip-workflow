@@ -15,7 +15,7 @@
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/saulmaldonado/skip-workflow">
 </p>
 
-# As Github actions now natively supports skipping workflows
+# ⚠ Github Actions now natively supports skipping workflows
 
 As of February 8, 2021, Github Actions natively support skipping pull request and push workflow if any of the commit messages in your push or the HEAD commit of your PR contains 
 `[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, or `[actions skip]`. This achieves the exact same effect as the action without the need to change or structure your workflow in a certain way. You can still use this action to programatically run different jobs.
