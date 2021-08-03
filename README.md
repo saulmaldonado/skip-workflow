@@ -15,10 +15,10 @@
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/saulmaldonado/skip-workflow">
 </p>
 
-# As Github actions now natively supports skipping workflows
+# ⚠ Github Actions now natively supports skipping workflows
 
 As of February 8, 2021, Github Actions natively support skipping pull request and push workflow if any of the commit messages in your push or the HEAD commit of your PR contains 
-`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, or `[actions skip]`. This achieves the exact same effect as the action without the need to change or structure your workflow in a certain way. You can still use this action to programatically run different jobs.
+`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, or `[actions skip]`. This achieves the exact same effect as the action without the need to change or structure your workflow in a certain way. You can still use this action to programatically run different jobs or steps. [Run steps programatically example](#run-steps-programatically)
 
 # Skip Workflow
 
@@ -47,13 +47,15 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
 
       - name: skip-workflow
+      
         id: skip-workflow # id used for referencing step
+        
         uses: saulmaldonado/skip-workflow@v1
         with:
           phrase: 'skip-workflow'
@@ -98,7 +100,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -156,7 +158,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -212,7 +214,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -268,7 +270,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -325,7 +327,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -382,7 +384,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -492,4 +494,53 @@ steps:
 
   - name: test
     if: ${{ !steps.skip-workflow.outputs.skip }} # conditionally run following steps
+```
+
+## Run steps programatically
+
+Since all this action does is search for phrase and regex matches in messages, it can be used for many other scenarios outside of skipping workflows. If you want to programatically run jobs based on phrases found in PR or commit messages you can do so by adding conditionals to steps/jobs.
+
+The following workflow will search for `[deploy]` in any of the commit messages 
+
+
+```yml
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: run-deploy
+      
+        id: run-deploy # id used for referencing step
+        
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[deploy]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+       
+      - name: Test
+        run: npm test
+
+      - name: Deploy
+        if: ${{ steps.run-deploy.outputs.skip }} # This step will only run if `[deploy]` is found
+        run: npm run deploy
+
 ```
